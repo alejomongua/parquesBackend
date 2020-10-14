@@ -80,7 +80,7 @@ _**Métodos**_
 
 ### Creación de un juego:
 
-#### newGame:
+#### newGame (posiciones=4, public=true):
 
 Crea un objeto de tipo juego, retorna el ID del juego recién creado
 
