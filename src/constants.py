@@ -7,4 +7,6 @@ COLORES = {
     'Azul oscuro': '#000075',
     'Gris': '#a9a9a9',
     'Negro': '#ffffff'
-  }
+}
+
+DATABASE_URL = 'https://to-do-app-3c2c2.firebaseio.com/'
