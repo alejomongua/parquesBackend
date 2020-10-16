@@ -2,7 +2,7 @@
 class Tablero(object):
     colores=[]
 
-    def __init__(self, posiciones:int):
+    def __init__(self, posiciones:int, estado: dict=None):
         self.posiciones = posiciones
         self.colores = [None]*posiciones
     

@@ -23,7 +23,8 @@ class Jugador(object):
 
   def cantidad_dados(self):
     """Determina la cantidad de dados que puede lanzar un jugador"""
-    if len([ficha for ficha in self.fichas if ficha.encarcelada and not ficha.coronada]) == 1:
+    fichas_restantes = [ficha for ficha in self.fichas if not ficha.coronada]
+    if len(fichas_restantes) == 1 and fichas_restantes[0].recta_final and fichas_restantes[0].posicion >= 2:
       return 1
 
     return 2
