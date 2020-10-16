@@ -60,7 +60,7 @@ _**Métodos**_
 
 **dado1**: _integer_ -> Indica la cantidad obtenida en el primer dado, si no ha lanzado o ya movió es null
 
-**dado2**: _integer_ -> Indica la cantidad obtenida en el segundo dado, si no ha lanzado o ya movió o solo va a lanzar un dado es null
+**dado2**: _integer_ -> Indica la cantidad obtenida en el segundo dado, si no ha lanzado o ya movió o solo va a lanzar un dado es 0
 
 **lanzado**: _boolean_ -> Indica si ya se lanzaron los dados
 

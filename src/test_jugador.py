@@ -2,7 +2,7 @@ import unittest
 from jugador import Jugador
 import constants
 
-class FichaTest(unittest.TestCase):
+class JugadorTest(unittest.TestCase):
   
   def test_dump_object(self):
     # Tome el primer elemento de la lista de colores

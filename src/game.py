@@ -4,6 +4,7 @@ import uuid
 # import my_firebase
 import tablero
 import jugador
+from turno import Turno
 import constants
 
 class Game():
@@ -20,6 +21,7 @@ class Game():
       self.created_at = time.time()
       self.started_at = None
       self.last_turn = None
+      self.turno = Turno()
     else:
       self.tablero = tablero.Tablero(None, estado['tablero'])
       self.publico = estado['publico']
@@ -83,13 +85,21 @@ class Game():
         'mensaje': 'No se puede iniciar la partida porque hay muy pocos jugadores'
       }
 
+    # Orden aleatorio de los turnos de los jugadores
+    # To do
+
+    # Asigna el primer turno
+    self.turno.color = self.jugadores[0]
+
+    # Marca el inicio del juego
     self.started_at = time.time()
     self.iniciado = True
+
     return { 'success': True }
 
   def lanzar(self, jugador: jugador.Jugador):
     """Realiza un lanzamiento de dados"""
-    if False: # Pendiente verificar si es el turno
+    if False: # To do verificar si es el turno
       return {
         'error': True,
         'mensaje': 'Espere su turno'
@@ -104,13 +114,13 @@ class Game():
         'mensaje': 'Ficha erronea'
       }
 
-    if False: # Pendiente verificar
+    if False: # To do verificar
       return {
         'error': True,
         'mensaje': 'Movimiento ilegal'
       }
 
-    if False: # Pendiente verificar
+    if False: # To do verificar
       return {
         'error': True,
         'mensaje': 'Espere su turno'
@@ -126,13 +136,13 @@ class Game():
         'mensaje': 'No tiene fichas en la carcel'
       }
 
-    if False: # Pendiente verificar si sacó pares
+    if False: # To do verificar si sacó pares
       return {
         'error': True,
         'mensaje': 'Necesita sacar pares para salir de la carcel'
       }
 
-    if False: # Pendiente verificar si es el turno
+    if False: # To do verificar si es el turno
       return {
         'error': True,
         'mensaje': 'Espere su turno'
