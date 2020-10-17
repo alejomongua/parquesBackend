@@ -4,8 +4,21 @@ from tablero import Tablero
 from turno import Turno
 from jugador import Jugador
 
+def iniciar_juego(jugadores: int):
+    # Instancie un juego
+    game = Game(4, False)
+
+    # Agregue los jugadores
+    for counter in range(4):
+      game.join(constants.COLORES.keys()[0], f'jugador{counter}')
+
+    # Inicie el juego
+    game.start()
+
+    return game
+
 class GameTest(unittest.TestCase):
-  
+
   def test_new_game_default_values(self):
     # Cree un juego de 4 posiciones
     game = Game(4, False)
@@ -125,15 +138,8 @@ class GameTest(unittest.TestCase):
       game.join(color, color)
 
   def test_lanzar(self):
-    # Instancie un juego
-    game = Game(4, False)
-
-    # Agregue los jugadores
-    for counter in range(4):
-      game.join(constants.COLORES.keys()[0], f'jugador{counter}')
-
-    # Inicie el juego
-    game.start()
+    # Inicie un juego de 4 jugadores
+    game = iniciar_juego(4)
 
     # Intente lanzar con un jugador que no sea el primero
     self.assertRaise():
@@ -150,7 +156,22 @@ class GameTest(unittest.TestCase):
     self.assertEqual(game.turno.color, game.jugadores[0].color)
 
   def test_sacar_de_la_carcel(self):
-    pass
+    game = iniciar_juego(4)
+
+    # Repita los turnos hasta que saque pares
+    while True:
+      # Encuentre cual es jugador que sigue
+      for jugador in game.jugadores:
+        if jugador.color == game.turno.color:
+          jugador_actual = jugador
+          break
+      # El jugador que corresponda lance los dados
+      game.lanzar(jugador_actual)
+
+      # Si no saca pares
+      if game.turno.dado1 != game.turno.dado2:
+        with self.assertRaise():
+          game.sacar_de_la_carcel(jugador_actual)
 
   def test_mover(self):
     pass
