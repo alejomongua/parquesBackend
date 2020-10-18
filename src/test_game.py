@@ -412,7 +412,7 @@ class GameTest(unittest.TestCase):
     self.assertFalse(game.jugadores[0].ficha[1].encarcelada)
 
   def test_primer_seguro(self):
-    game = iniciar_jugar(4)
+    game = iniciar_juego(4)
 
     sacar_de_la_carcel(game)
 
@@ -430,7 +430,7 @@ class GameTest(unittest.TestCase):
     self.assertFalse(game.jugadores[2].ficha[0].encarcelada)
 
   def test_segundo_seguro(self):
-    game = iniciar_jugar(4)
+    game = iniciar_juego(4)
 
     sacar_de_la_carcel(game)
 
@@ -448,7 +448,7 @@ class GameTest(unittest.TestCase):
     self.assertFalse(game.jugadores[2].ficha[0].encarcelada)
 
   def test_salida_como_seguro(self):
-    game = iniciar_jugar(4)
+    game = iniciar_juego(4)
 
     sacar_de_la_carcel(game)
 
@@ -466,23 +466,69 @@ class GameTest(unittest.TestCase):
     self.assertFalse(game.jugadores[2].ficha[0].encarcelada)
 
   def test_meter_a_la_carcel_en_salida(self):
-    game = iniciar_jugar(4)
-    # to do
+    game = iniciar_juego(4)
 
-  def test_queda_solo_una_ficha(self):
-    game = iniciar_jugar(4)
+    # Repita los turnos hasta que saque pares
+    while True:
+      # Encuentre cual es jugador que sigue
+      for jugador in game.jugadores:
+        if jugador.color == game.turno.color:
+          jugador_actual = jugador
+          break
+
+      # Meta las fichas del jugador actual a la carcel
+      for ficha in jugador_actual.fichas:
+        ficha.encarcelada = True
+
+      # Otro jugador diferente al actual
+      otro_jugador = game.jugadores[0]
+      if jugador_actual.color == game.jugadores[0].color:
+        otro_jugador = game.jugadores[1]
+
+      # Saque las fichas del otro jugador de la carcel y pongalas todas
+      # en la salida del jugador actual (que bruto!)
+      for ficha in otro_jugador.fichas:
+        ficha.encarcelada = False
+        ficha.posicion = jugador_actual.salida
+
+      # El jugador que corresponda lance los dados
+      game.lanzar(jugador_actual)
+
+      # Si saca pares
+      if game.turno.dado1 == game.turno.dado2:
+        # Saque las fichas de la carcel
+        game.sacar_de_la_carcel(jugador_actual)
+
+        # Todas las fichas del otro jugador deben estar encarceladas
+        self.assertTrue(all([ficha.encarcelada for ficha in otro_jugador.fichas]))
+
+        break
+
+  def test_solo_una_ficha_sale_de_la_carcel_y_mueve(self):
+    game = iniciar_juego(4)
+
+    # Corone 3 de 4 fichas de cada jugador
+    for jugador in game.jugadores:
+      for contador in range(3):
+        ficha = jugador.fichas[contador]
+        ficha.coronada = True
+
+    # Al salir de la carcel debe permitirle mover con la misma ficha
+
+  def test_solo_una_ficha_mueve_solo_un_dado_y_come(self)
+    game = iniciar_juego(4)
     # to do
 
   def test_soplar(self):
-    game = iniciar_jugar(4)
+    game = iniciar_juego(4)
     # to do
 
   def test_coronar(self):
-    game = iniciar_jugar(4)
+    game = iniciar_juego(4)
     # to do
 
   def test_ganar(self):
-    game = iniciar_jugar(4)
+    game = iniciar_juego(4)
     # to do
 
 if __name__ == '__main__':
