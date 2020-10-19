@@ -601,7 +601,7 @@ class GameTest(unittest.TestCase):
     game.mover(game.jugadores[0].key, 0, 4 + game.turno.dado2)
 
     # Sople la ficha que no comio
-    resultado = game.soplar(game.jugadores[0].fichas[0])
+    resultado = game.soplar(game.jugadores[0].color, 0)
 
     # Verifique que es procedente
     with self.assertRaises(KeyError):
@@ -632,7 +632,7 @@ class GameTest(unittest.TestCase):
         game.mover(jugador_actual.key, 0, game.turno.dado1 + game.turno.dado2)
 
         # Sople la ficha que movio
-        resultado = game.soplar(jugador_actual.fichas[0])
+        resultado = game.soplar(jugador_actual.color, 0)
 
         # Verifique que es procedente
         with self.assertRaises(KeyError):
@@ -668,7 +668,7 @@ class GameTest(unittest.TestCase):
     game.mover(game.jugadores[0].key, 0, 7)
 
     # Sople la ficha que movio
-    resultado = game.soplar(game.jugadores[0].fichas[0])
+    resultado = game.soplar(game.jugadores[0].color, 0)
 
     # Verifique que es procedente
     self.assertEqual(resultado['error'], True)
@@ -677,10 +677,93 @@ class GameTest(unittest.TestCase):
     self.assertFalse(game.jugadores[0].fichas[0].encarcelada)
 
   def test_soplar_cuando_no_procede_porque_si_comio(self):
-    pass
+    game = iniciar_juego(4)
+
+    sacar_de_la_carcel(game)
+
+    # Ponga una ficha al alcance
+    game.jugadores[2].fichas[0].posicion = game.jugadores[0].salida + 4
+
+    # Lance los dados y acomodelos
+    game.lanzar(game.jugadores[0].key)
+    game.turno.dado1 = 4
+
+    # Mueva la ficha sin comerse la que podia comerse
+    game.mover(game.jugadores[0].key, 1, game.turno.dado2)
+    game.mover(game.jugadores[0].key, 0, 4)
+
+    # Sople la ficha que no comio
+    resultado = game.soplar(game.jugadores[1].color, 0)
+
+    # Verifique que es procedente
+    self.assertEqual(resultado['error'], True)
+
+    # Verifique que la ficha no vaya a la carcel
+    self.assertFalse(game.jugadores[0].fichas[0].encarcelada)
+    self.assertFalse(game.jugadores[0].fichas[1].encarcelada)
+
+  def test_soplar_cuando_no_procede_porque_no_ha_terminado_de_mover(self):
+    game = iniciar_juego(4)
+
+    sacar_de_la_carcel(game)
+
+    # Ponga una ficha al alcance
+    game.jugadores[2].fichas[0].posicion = game.jugadores[0].salida + 4
+
+    # Lance los dados y acomodelos
+    game.lanzar(game.jugadores[0].key)
+    game.turno.dado1 = 4
+
+    # Mueva la ficha sin comerse la que podia comerse
+    game.mover(game.jugadores[0].key, 1, game.turno.dado2)
+
+    # Sople la ficha que no comio
+    resultado = game.soplar(game.jugadores[0].color, 0)
+
+    # Verifique que es procedente
+    self.assertEqual(resultado['error'], True)
+
+    # Verifique que la ficha no vaya a la carcel
+    self.assertFalse(game.jugadores[0].fichas[0].encarcelada)
+    self.assertFalse(game.jugadores[0].fichas[1].encarcelada)
 
   def test_soplar_cuando_no_procede_porque_si_saco(self):
-    pass
+    game = iniciar_juego(4)
+
+    sacar_de_la_carcel(game, 3)
+
+    # intentelo hasta que saque pares
+    while True:
+      # Encuentre cual es jugador que sigue
+      for jugador in game.jugadores:
+        if jugador.color == game.turno.color:
+          jugador_actual = jugador
+          break
+      # El jugador que corresponda lance los dados
+      game.lanzar(jugador_actual.key)
+
+      # Si saca pares
+      if game.turno.dado1 == game.turno.dado2:
+        # Saque las fichas de la carcel
+        game.sacar_de_la_carcel(jugador_actual.key)
+        game.mover(jugador_actual.key, 3, game.turno.dado1)
+
+        # Sople la ficha que movio
+        resultado = game.soplar(jugador_actual.color, 3)
+
+        # Verifique que no es procedente
+        self.assertEqual(resultado['error'], True)
+
+        # Verifique que la ficha no vaya a la carcel
+        self.assertFalse(jugador_actual.fichas[3].encarcelada)
+
+        break
+
+      # Si no saca pares mueva para que sea el turno del siguiente jugador
+      game.mover(jugador_actual.key, 0, game.turno.dado1 + game.turno.dado2)
+
+      # Devuelva la ficha para hacer las pruebas predecibles
+      jugador_actual.fichas[0].posicion = jugador_actual.salida
 
   def test_coronar(self):
     game = iniciar_juego(4)

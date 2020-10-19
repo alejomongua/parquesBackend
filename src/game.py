@@ -245,16 +245,16 @@ class Game():
               esta_ficha.coronada = True
 
         else:
-          esta_ficha.posicion = (esta_ficha.posicion + cantidad) % self.tablero.posiciones * 17
+          esta_ficha.posicion = (posicion_actual + movimiento + 1) % self.tablero.posiciones * 17
 
     # Determine cuantos dados usó
     if cantidad == self.turno.dado1:
-      self.turno.dado1 == 0
+      self.turno.dado1 = 0
     elif cantidad == self.turno.dado2:
-      self.turno.dado2 == 0
+      self.turno.dado2 = 0
     else:
-      self.turno.dado1 == 0
-      self.turno.dado2 == 0
+      self.turno.dado1 = 0
+      self.turno.dado2 = 0
 
     # Revise si metió alguna ficha a la carcel
     if not esta_ficha.recta_final and not self.tablero.seguro(esta_ficha.posicion) and not self.tablero.salida(esta_ficha.posicion):
@@ -282,26 +282,49 @@ class Game():
         'mensaje': 'La llave no coincide con ningún jugador en este juego'
       }
 
-    if not any([not ficha.encarcelada for ficha in jugador.fichas]):
-      return {
-        'error': True,
-        'mensaje': 'No tiene fichas en la carcel'
-      }
-
-    if False: # To do verificar si sacó pares
-      return {
-        'error': True,
-        'mensaje': 'Necesita sacar pares para salir de la carcel'
-      }
-
     if self.turno.color == jugador.color:
       return {
         'error': True,
         'mensaje': 'Espere su turno'
       }
+    
+    if self.turno.dado1 is None or self.turno.dado2 is None:
+      return {
+        'error': True,
+        'mensaje': 'Debe lanzar los dados primero'
+      }
 
-    # to do
+    if self.turno.dado1 == self.turno.dado2:
+      return {
+        'error': True,
+        'mensaje': 'Necesita sacar pares para salir de la carcel'
+      }
 
+    fichas_encarceladas = [ficha for ficha in jugador.fichas if ficha.encarcelada]
+    cantidad_encarceladas = len(fichas_encarceladas)
+    if cantidad_encarceladas == 0:
+      return {
+        'error': True,
+        'mensaje': 'No tiene fichas en la carcel'
+      }
+
+    contador = 0
+    for ficha in fichas_encarceladas:
+      ficha.encarcelada = False
+      # Si no es par de 6 ni de 1, saque solo 2
+      if self.turno.dado1 != 6 and self.turno.dado2 != 1:
+        contador += 1
+        if contador == 2:
+          break
+
+    self.turno.dado2 = 0
+    if cantidad_encarceladas == 1:
+      self.turno.dado2 = 0
+
+    self.turno.pares = 0
+
+    return self.dump_object()
+  
   def start(self):
     """Inicia el juego"""
     # To do

@@ -11,9 +11,14 @@ class Jugador(object):
     self.fichas = [Ficha(), Ficha(), Ficha(), Ficha()]
     self.puede_sacar_de_la_carcel = False
     self.puede_comer = False
+    # En esta variable se almacena el timestamp del último turno que jugó,
+    # sirve para el timeout de soplar
+    self.ultimo_turno = None
     # Asociar después de instanciar
     self.salida = 0
     self.key = None
+    # En este array se almacenarán las fichas que pueden ser sopladas
+    self.fichas_soplables = []
 
   def cantidad_dados(self):
     """Determina la cantidad de dados que puede lanzar un jugador"""
