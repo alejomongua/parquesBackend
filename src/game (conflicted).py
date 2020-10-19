@@ -216,36 +216,14 @@ class Game():
           'mensaje': 'Movimiento ilegal'
         }
 
-      esta_ficha.posicion += cantidad
-
-      if esta_ficha.posicion == 8:
-        esta_ficha.coronada = True
-
     else:
-      # Si no esta en la recta final
       posicion_actual = esta_ficha.posicion
       llegada = (jugador.salida + self.tablero.posiciones * 17 - 5) % self.tablero.posiciones * 17
 
       for movimiento in range(cantidad):
-        pasos_restantes = cantidad - movimiento - 1
-
-        # Si llegó a la recta final:
-        if posicion_actual + movimiento + 1 == llegada:
-          if pasos_restantes > 8:
-            return {
-              'error': True,
-              'mensaje': 'Movimiento ilegal'
-            }
-
-          else:
-            esta_ficha.recta_final = True
-            esta_ficha.posicion += pasos_restantes
-
-            if esta_ficha.posicion == 8:
-              esta_ficha.coronada = True
-
-        else:
-          esta_ficha.posicion = (esta_ficha.posicion + cantidad) % self.tablero.posiciones * 17
+        pasos_restantes = 
+        if posicion_actual + movimiento == llegada:
+          pass
 
     # Determine cuantos dados usó
     if cantidad == self.turno.dado1:
@@ -255,20 +233,6 @@ class Game():
     else:
       self.turno.dado1 == 0
       self.turno.dado2 == 0
-
-    # Revise si metió alguna ficha a la carcel
-    if not esta_ficha.recta_final and not self.tablero.seguro(esta_ficha.posicion) and not self.tablero.salida(esta_ficha.posicion):
-      for otro_jugador in self.jugadores:
-        if jugador.color == otro_jugador.color:
-          continue
-
-        for otra_ficha in otro_jugador.fichas:
-          if otra_ficha.encarcelada or otra_ficha.coronada or otra_ficha.recta_final:
-            continue
-
-          if otra_ficha.posicion == esta_ficha.posicion:
-            otra_ficha.encarcelada = True
-            otra_ficha.posicion = otro_jugador.salida
 
     return self.dump_object()
 

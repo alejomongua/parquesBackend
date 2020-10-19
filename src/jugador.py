@@ -9,6 +9,8 @@ class Jugador(object):
     self.retirado = False
     self.finalizado = False
     self.fichas = [Ficha(), Ficha(), Ficha(), Ficha()]
+    self.puede_sacar_de_la_carcel = False
+    self.puede_comer = False
     # Asociar después de instanciar
     self.salida = 0
     self.key = None

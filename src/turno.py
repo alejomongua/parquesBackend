@@ -72,12 +72,6 @@ class Turno():
     else:
       self.pares = None
 
-  def movio(self, dado1 = False, dado2 = False):
-    if dado1:
-      self.dado1 = 0
-    if dado2:
-      self.dado2 = 0
-
   def siguiente_turno(self, color: str):
     self.color = color,
     self.dado1 = None
