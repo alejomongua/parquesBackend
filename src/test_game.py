@@ -118,7 +118,7 @@ class GameTest(unittest.TestCase):
     self.assertEqual(len(game.jugadores), 4)
 
   def test_start_game(self):
-    game = Game.create([5~]4, False)
+    game = Game.create(4, False)
 
     # No debe dejar iniciar sin jugadores
     resultado = game.start()
@@ -544,7 +544,7 @@ class GameTest(unittest.TestCase):
         self.assertEqual(jugador_actual.fichas[-1].posicion, jugador_actual.salida + game.turno.dado1)
         break
 
-  def test_solo_una_ficha_mueve_solo_un_dado_y_come(self)
+  def test_solo_una_ficha_mueve_solo_un_dado_y_come(self):
     game = iniciar_juego(4)
 
     # Corone 3 de 4 fichas de cada jugador
