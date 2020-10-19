@@ -150,8 +150,33 @@ class Game():
 
     # to do
 
+  def start(self):
+    """Inicia el juego"""
+    # To do
+    return {}
+
+  def coronar(self, ficha):
+    """Corona una ficha por pares"""
+    # to do
+    return {}
+
+  def soplar(self, ficha):
+    """Sopla una ficha para enviarla a la carcel"""
+    # To do
+    return {}
+
   @classmethod
   def retrieve_from_database(cls, id: str):
     """Trae una instancia de un juego desde la base de datos"""
     # to do
     pass
+
+  @classmethod
+  def create(cls, posiciones: int = 4, publico: bool = False):
+    if posiciones >= 4 or posiciones <= 8:
+      return cls(posiciones, publico)
+
+    return {
+      'error': True,
+      'mensaje': f'No se puede crear un juego para {posiciones} jugadores'
+    }

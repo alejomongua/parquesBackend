@@ -58,11 +58,11 @@ class GameTest(unittest.TestCase):
 
     # No debe dejar crear tableros de 3 posiciones
     game = Game.create(3, False)
-    self.assertIsNotInstance(game, Game)
+    self.assertNotIsInstance(game, Game)
 
     # No debe dejar crear tableros de 10 posiciones
     game = Game.create(10, False)
-    self.assertIsNotInstance(game, Game)
+    self.assertNotIsInstance(game, Game)
 
   def test_new_game_publico(self):
     # Cree un juego público
@@ -339,21 +339,21 @@ class GameTest(unittest.TestCase):
         self.assertTrue(all([not ficha.encarcelada for ficha in jugador_actual.fichas]))
 
         # Intente mover la ficha que salio de la carcel
-        resultado = game.mover(jugador.fichas[3], game.turno.dado1)
+        resultado = game.mover(jugador_actual.fichas[3], game.turno.dado1)
         self.assertDictContainsSubset(resultado, { 'error': True })
-        self.assertEqual(game.jugadores[0].fichas[3].posicion, game.jugadores[0].salida)
+        self.assertEqual(jugador_actual.fichas[3].posicion, jugador_actual.salida)
 
         # Intente mover la suma de los dos dados
-        posicion_ficha0 = jugador.fichas[0].posicion
-        resultado = game.mover(jugador.fichas[0], game.turno.dado1 + game.turno.dado2)
+        posicion_ficha0 = jugador_actual.fichas[0].posicion
+        resultado = game.mover(jugador_actual.fichas[0], game.turno.dado1 + game.turno.dado2)
         self.assertDictContainsSubset(resultado, { 'error': True })
-        self.assertEqual(game.jugadores[0].fichas[0].posicion, posicion_ficha0)
+        self.assertEqual(jugador_actual.fichas[0].posicion, posicion_ficha0)
 
         # Mueva el resultado de un dado
-        resultado = game.mover(jugador.fichas[0], game.turno.dado1)
+        resultado = game.mover(jugador_actual.fichas[0], game.turno.dado1)
         with self.assertRaises(KeyError):
           resultado['error']
-        self.assertEqual(game.jugadores[0].fichas[0].posicion, posicion_ficha0 + game.turno.dado1)
+        self.assertEqual(jugador_actual.fichas[0].posicion, posicion_ficha0 + game.turno.dado1)
 
         # El contador de pares debe ser 0 porque salio de la carcel
         self.assertEqual(game.turno.pares, 0)
@@ -565,7 +565,7 @@ class GameTest(unittest.TestCase):
     game.turno.dado1 = 4
 
     # Mueva la ficha
-    game.move(ficha, 4)
+    game.mover(ficha, 4)
 
     # Verifique que la otra ficha este en la carcel
     self.assertTrue(game.jugadores[2].ficha[0].encarcelada)
@@ -621,17 +621,17 @@ class GameTest(unittest.TestCase):
       if game.turno.dado1 == game.turno.dado2:
 
         # Mueva una ficha en vez de sacar de la carcel
-        game.mover(game.jugadores[0].fichas[0], game.turno.dado1 + game.turno.dado2)
+        game.mover(jugador_actual.fichas[0], game.turno.dado1 + game.turno.dado2)
 
         # Sople la ficha que movio
-        resultado = game.soplar(game.jugadores[0].fichas[0])
+        resultado = game.soplar(jugador_actual.fichas[0])
 
         # Verifique que es procedente
         with self.assertRaises(KeyError):
           resultado['error']
 
         # Verifique que la ficha vaya a la carcel
-        self.assertTrue(game.jugadores[0].fichas[0].encarcelada)
+        self.assertTrue(jugador_actual.fichas[0].encarcelada)
 
         break
 
@@ -709,26 +709,26 @@ class GameTest(unittest.TestCase):
 
       # Si saca pares
       if game.turno.dado1 == game.turno.dado2:
-        resultado = game.coronar(game.jugadores[0].fichas[0])
+        resultado = game.coronar(jugador_actual.fichas[0])
 
         # Verifique que no hay error
         with self.assertRaises(KeyError):
           resultado['error']
 
         # Verifique que la ficha si fue coronada
-        self.assertTrue(game.jugadores.fichas[0].coronada)
+        self.assertTrue(jugador_actual.fichas[0].coronada)
 
         break
 
       # else (si no saco pares)
       # Intente coronar sin haber sacado pares
-      resultado = game.coronar(game.jugadores[0].fichas[0])
+      resultado = game.coronar(jugador_actual.fichas[0])
 
       # Verifique que no es procedente
       self.assertDictContainsSubset(resultado, { 'error': True })
 
       # Verifique que la ficha no este coronada
-      self.assertFalse(game.jugadores[0].fichas[0].coronada)
+      self.assertFalse(jugador_actual.fichas[0].coronada)
 
       # Si no saca pares mueva para que sea el turno del siguiente jugador
       game.mover(jugador_actual.fichas[0], game.turno.dado1 + game.turno.dado2)
