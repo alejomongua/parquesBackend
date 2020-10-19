@@ -395,14 +395,14 @@ class GameTest(unittest.TestCase):
     self.assertFalse(game.jugadores[0].fichas[0].encarcelada)
 
     # Verifique que vuelve a la posicion incial
-    self.assertEqual(game.jugadores[2].fichas[0].posicion = game.jugadores[2].salida)
+    self.assertEqual(game.jugadores[2].fichas[0].posicion, game.jugadores[2].salida)
 
     # Intente mover la misma ficha con la que metio a la carcel con el otro dado
     resultado = game.mover(game.jugadores[0].fichas[0], 4)
 
     # Verifique que no se puede
     self.assertDictContainsSubset(resultado, { 'error': True })
-    self.assertEqual(game.jugadores[0].fichas[0], game.jugadores[0].salida + 5)
+    self.assertEqual(game.jugadores[0].fichas[0].posicion, game.jugadores[0].salida + 5)
 
     # Mueva otra ficha donde ya tenia una el mismo jugador
     game.mover(game.jugadores[0].fichas[1], 4)
@@ -504,6 +504,12 @@ class GameTest(unittest.TestCase):
 
         break
 
+      # Si no saca pares mueva para que sea el turno del siguiente jugador
+      game.mover(jugador_actual.fichas[0], game.turno.dado1 + game.turno.dado2)
+
+      # Devuelva la ficha para hacer las pruebas predecibles
+      jugador_actual.fichas[0].posicion = jugador_actual.salida
+
   def test_solo_una_ficha_sale_de_la_carcel_y_mueve(self):
     game = iniciar_juego(4)
 
@@ -514,22 +520,246 @@ class GameTest(unittest.TestCase):
         ficha.coronada = True
 
     # Al salir de la carcel debe permitirle mover con la misma ficha
+    while True:
+      # Encuentre cual es jugador que sigue
+      for jugador in game.jugadores:
+        if jugador.color == game.turno.color:
+          jugador_actual = jugador
+          break
+
+      # El jugador que corresponda lance los dados
+      game.lanzar(jugador_actual)
+
+      # Si saca pares
+      if game.turno.dado1 == game.turno.dado2:
+        # Saque las fichas de la carcel
+        game.sacar_de_la_carcel(jugador_actual)
+
+        # Debe poder mover la ficha que acaba de sacar de la carcel
+        resultado = game.mover(jugador_actual.fichas[-1], game.turno.dado1)
+
+        with self.assertRaises(KeyError):
+          resultado['error']
+
+        self.assertEqual(jugador_actual.fichas[-1].posicion, jugador_actual.salida + game.turno.dado1)
+        break
 
   def test_solo_una_ficha_mueve_solo_un_dado_y_come(self)
     game = iniciar_juego(4)
-    # to do
 
-  def test_soplar(self):
+    # Corone 3 de 4 fichas de cada jugador
+    for contador in range(3):
+      ficha = game.jugadores[0].fichas[contador]
+      ficha.coronada = True
+
+    # La unica ficha que le queda al jugador 1
+    ficha = game.jugadores[0].fichas[-1]
+
+    # pone una ficha al alcance de la primera
+    game.jugadores[2].ficha[0].posicion = ficha.posicion + 4
+
+    # Lance los dados
+    game.lanzar(game.jugadores[0])
+
+    # Organice los dados
+    game.turno.dado1 = 4
+
+    # Mueva la ficha
+    game.move(ficha, 4)
+
+    # Verifique que la otra ficha este en la carcel
+    self.assertTrue(game.jugadores[2].ficha[0].encarcelada)
+
+    # Intente mover el otro dado
+    resultado = game.mover(ficha, game.turno.dado2)
+
+    # Verifique que no se puede
+    self.assertDictContainsSubset(resultado, { 'error': True })
+    self.assertEqual(ficha, game.jugadores[0].salida + 4)
+
+  def test_soplar_cuando_no_come(self):
     game = iniciar_juego(4)
-    # to do
+
+    sacar_de_la_carcel(game)
+
+    # Ponga una ficha al alcance
+    game.jugadores[2].fichas[0].posicion = game.jugadores[0].salida + 4
+
+    # Lance los dados y acomodelos
+    game.lanzar(game.jugadores[0])
+    game.turno.dado1 = 4
+
+    # Mueva la ficha sin comerse la que podia comerse
+    game.mover(game.jugadores[0].fichas[0], 4 + game.turno.dado2)
+
+    # Sople la ficha que no comio
+    resultado = game.soplar(game.jugadores[0].fichas[0])
+
+    # Verifique que es procedente
+    with self.assertRaises(KeyError):
+      resultado['error']
+
+    # Verifique que la ficha vaya a la carcel
+    self.assertTrue(game.jugadores[0].fichas[0].encarcelada)
+
+  def test_cuando_no_saca_de_la_carcel(self):
+    game = iniciar_juego(4)
+
+    sacar_de_la_carcel(game, 2)
+
+    # intentelo hasta que saque pares
+    while True:
+      # Encuentre cual es jugador que sigue
+      for jugador in game.jugadores:
+        if jugador.color == game.turno.color:
+          jugador_actual = jugador
+          break
+      # El jugador que corresponda lance los dados
+      game.lanzar(jugador_actual)
+
+      # Si saca pares
+      if game.turno.dado1 == game.turno.dado2:
+
+        # Mueva una ficha en vez de sacar de la carcel
+        game.mover(game.jugadores[0].fichas[0], game.turno.dado1 + game.turno.dado2)
+
+        # Sople la ficha que movio
+        resultado = game.soplar(game.jugadores[0].fichas[0])
+
+        # Verifique que es procedente
+        with self.assertRaises(KeyError):
+          resultado['error']
+
+        # Verifique que la ficha vaya a la carcel
+        self.assertTrue(game.jugadores[0].fichas[0].encarcelada)
+
+        break
+
+      # Si no saca pares mueva para que sea el turno del siguiente jugador
+      game.mover(jugador_actual.fichas[0], game.turno.dado1 + game.turno.dado2)
+
+      # Devuelva la ficha para hacer las pruebas predecibles
+      jugador_actual.fichas[0].posicion = jugador_actual.salida
+
+  def test_soplar_cuando_no_procede(self):
+    game = iniciar_juego(4)
+
+    sacar_de_la_carcel(game)
+
+    game.lanzar(game.jugadores[0])
+
+    # Ponga una ficha en un seguro
+    game.jugadores[2].fichas[0].posicion = game.jugadores[0].salida + 7
+
+    # Lance los dados y acomodelos
+    game.lanzar(game.jugadores[0])
+    game.turno.dado1 = 4
+    game.turno.dado2 = 3
+
+    # Mueva la ficha sin comerse la que podia comerse
+    game.mover(game.jugadores[0].fichas[0], 7)
+
+    # Sople la ficha que movio
+    resultado = game.soplar(game.jugadores[0].fichas[0])
+
+    # Verifique que es procedente
+    self.assertDictContainsSubset(resultado, { 'error': True })
+
+    # Verifique que la ficha no vaya a la carcel
+    self.assertFalse(game.jugadores[0].fichas[0].encarcelada)
 
   def test_coronar(self):
     game = iniciar_juego(4)
-    # to do
+
+    sacar_de_la_carcel(game)
+
+    # Ponga a una ficha a tres de ganar
+    ficha = game.jugadores[0].fichas[0]
+    ficha.recta_final = True
+    ficha.posicion = 5 # Se gana en 8
+
+    # Lance y acomode los dados
+    game.lanzar(game.jugadores[0])
+    game.turno.dado1 = 3
+
+    # Corone la ficha
+    game.mover(ficha, 3)
+
+    # Verifique que la ficha queda coronada
+    self.assertTrue(ficha.coronada)
+
+  def test_coronar_con_pares(self):
+    game = iniciar_juego(4)
+
+    sacar_de_la_carcel(game)
+
+    # Repita los turnos hasta que saque pares
+    while True:
+      # Encuentre cual es jugador que sigue
+      for jugador in game.jugadores:
+        if jugador.color == game.turno.color:
+          jugador_actual = jugador
+          break
+
+      # El jugador tiene dos pares seguidos
+      game.turno.pares = 2
+
+      # El jugador que corresponda lance los dados
+      game.lanzar(jugador_actual)
+
+      # Si saca pares
+      if game.turno.dado1 == game.turno.dado2:
+        resultado = game.coronar(game.jugadores[0].fichas[0])
+
+        # Verifique que no hay error
+        with self.assertRaises(KeyError):
+          resultado['error']
+
+        # Verifique que la ficha si fue coronada
+        self.assertTrue(game.jugadores.fichas[0].coronada)
+
+        break
+
+      # else (si no saco pares)
+      # Intente coronar sin haber sacado pares
+      resultado = game.coronar(game.jugadores[0].fichas[0])
+
+      # Verifique que no es procedente
+      self.assertDictContainsSubset(resultado, { 'error': True })
+
+      # Verifique que la ficha no este coronada
+      self.assertFalse(game.jugadores[0].fichas[0].coronada)
+
+      # Si no saca pares mueva para que sea el turno del siguiente jugador
+      game.mover(jugador_actual.fichas[0], game.turno.dado1 + game.turno.dado2)
+
+      # Devuelva la ficha para hacer las pruebas predecibles
+      jugador_actual.fichas[0].posicion = jugador_actual.salida
 
   def test_ganar(self):
     game = iniciar_juego(4)
-    # to do
+
+    sacar_de_la_carcel(game)
+
+    # Corone todas las fichas del jugador 1 salvo 1
+    for contador in range(3):
+      ficha = game.jugadores[0].fichas[contador]
+      ficha.coronada = True
+
+    # Ponga la ultima ficha a tres de ganar
+    ficha = game.jugadores[0].fichas[3]
+    ficha.recta_final = 4
+    ficha.posicion = 5 # gana cuando llega al 8
+
+    # Lance y acomode los dados
+    game.lanzar(game.jugadores[0])
+    game.turno.dado1 = 3
+
+    # Corone la ficha
+    game.mover(ficha, 3)
+
+    # Verifique que el jugador 1 haya ganado
+    self.assertTrue(game.jugadores[0].finalizado)
 
 if __name__ == '__main__':
     unittest.main()
