@@ -93,10 +93,17 @@ class GameTest(unittest.TestCase):
     color = constants.COLORES.keys()[0]
 
     # Agrega un jugador
-    game.join(color, 'pepitoperez')
+    resultado = game.join(color, 'pepitoperez')
+
+    # Verifique que no hay error
+    with self.assertRaises(KeyError):
+      resultado['error']
 
     # El numero de jugadores incrementa en uno
     self.assertEqual(len(game.jugadores), 1)
+
+    # Verifique que la funcion retorne la llave
+    self.assertEqual(resultado['key'], game.jugadores[-1].key)
 
     # No deja unirse con el mismo color
     resultado = game.join(color, 'otrojugador')
@@ -104,6 +111,7 @@ class GameTest(unittest.TestCase):
     self.assertDictContainsSubset(resultado, { 'error': True })
     self.assertEqual(len(game.jugadores), 1)
 
+  def test_demasiados_jugadores(self):
     # Cree un juego nuevo
     game = Game.create(4, False)
 
@@ -160,14 +168,14 @@ class GameTest(unittest.TestCase):
     game = iniciar_juego(4)
 
     # Intente lanzar con un jugador que no sea el primero
-    resultado = game.lanzar(game.jugadores[-1])
+    resultado = game.lanzar(game.jugadores[-1].key)
 
     self.assertDictContainsSubset(resultado, { 'error': True })
     self.assertIsNone(game.turno.dado1)
     self.assertIsNone(game.turno.dado2)
 
     # Lance con el primer jugador
-    game.lanzar(game.jugadores[0])
+    game.lanzar(game.jugadores[0].key)
 
     # Verifique que los dados se hayan lanzado
     self.assertIsNotNone(game.turno.dado1)
@@ -184,14 +192,14 @@ class GameTest(unittest.TestCase):
     sacar_de_la_carcel(game)
 
     # Lance los dados
-    resultado = game.lanzar(game.jugadores[0])
+    resultado = game.lanzar(game.jugadores[0].key)
 
     # No debe haber error
     with self.assertRaises(KeyError):
       resultado['error']
 
     # Intente volver a lanzar los dados sin haber movido
-    resultado = game.lanzar(game.jugadores[0])
+    resultado = game.lanzar(game.jugadores[0].key)
 
     # Debe generar un error
     self.assertDictContainsSubset(resultado, { 'error': True })
@@ -207,12 +215,12 @@ class GameTest(unittest.TestCase):
           jugador_actual = jugador
           break
       # El jugador que corresponda lance los dados
-      game.lanzar(jugador_actual)
+      game.lanzar(jugador_actual.key)
 
       # Si saca pares
       if game.turno.dado1 == game.turno.dado2:
         # Saque las fichas de la carcel
-        game.sacar_de_la_carcel(jugador_actual)
+        game.sacar_de_la_carcel(jugador_actual.key)
 
         # Si es par de unos o par de seises
         if game.turno.dado1 == 1 or game.turno.dado1 == 6:
@@ -224,7 +232,7 @@ class GameTest(unittest.TestCase):
         break
 
       # Si no saca pares no deja sacar de la carcel
-      resultado = game.sacar_de_la_carcel(jugador_actual)
+      resultado = game.sacar_de_la_carcel(jugador_actual.key)
 
       self.assertDictContainsSubset(resultado, { 'error': True })
       self.assertTrue(all([ficha.encarcelada for ficha in jugador_actual.fichas]))
@@ -237,30 +245,30 @@ class GameTest(unittest.TestCase):
     sacar_de_la_carcel(game)
 
     # Lance los dados
-    game.lanzar(game.jugadores[0])
+    game.lanzar(game.jugadores[0].key)
 
     # Intente mover con otro jugador
-    resultado = game.mover(game.jugadores[-1].fichas[0], game.turno.dado1)
+    resultado = game.mover(game.jugadores[-1].key, 0, game.turno.dado1)
 
     # Debe generar error
     self.assertDictContainsSubset(resultado, { 'error': True })
     self.assertEqual(game.jugadores[-1].fichas[0].posicion, game.jugadores[-1].salida)
 
     # Intente mover con el jugador correcto un numero incorrecto de casillas
-    resultado = game.mover(game.jugadores[0].fichas[0], game.turno.dado1 + game.turno.dado2 - 1)
+    resultado = game.mover(game.jugadores[0].key, 0, game.turno.dado1 + game.turno.dado2 - 1)
     self.assertDictContainsSubset(resultado, { 'error': True })
     self.assertEqual(game.jugadores[0].fichas[0].posicion, game.jugadores[0].salida)
 
     # Intente mover una ficha encarcelada
     game.jugadores[0].fichas[0].encarcelada = True
-    resultado = game.mover(game.jugadores[0].fichas[0], game.turno.dado1)
+    resultado = game.mover(game.jugadores[0].key, 0, game.turno.dado1)
     self.assertDictContainsSubset(resultado, { 'error': True })
     self.assertEqual(game.jugadores[0].fichas[0].posicion, game.jugadores[0].salida)
 
     # Intente mover una ficha coronada
     game.jugadores[0].fichas[0].encarcelada = False
     game.jugadores[0].fichas[0].coronada = True
-    resultado = game.mover(game.jugadores[0].fichas[0], game.turno.dado1)
+    resultado = game.mover(game.jugadores[0].key, 0, game.turno.dado1)
     self.assertDictContainsSubset(resultado, { 'error': True })
     self.assertEqual(game.jugadores[0].fichas[0].posicion, game.jugadores[0].salida)
 
@@ -272,7 +280,7 @@ class GameTest(unittest.TestCase):
     game.turno.dado1 = 6
 
     # Intente mover mas pasos de los que puede mover
-    resultado = game.mover(game.jugadores[0].fichas[1], game.turno.dado1)
+    resultado = game.mover(game.jugadores[0].key, 1, game.turno.dado1)
     self.assertDictContainsSubset(resultado, { 'error': True })
     self.assertEqual(game.jugadores[0].fichas[1].posicion, 6)
 
@@ -283,16 +291,16 @@ class GameTest(unittest.TestCase):
     sacar_de_la_carcel(game)
 
     # Lance los dados
-    game.lanzar(game.jugadores[0])
+    game.lanzar(game.jugadores[0].key)
 
     # Mueva el jugador correcto la cantidad de fichas de un dado
-    resultado = game.mover(game.jugadores[0].fichas[0], game.turno.dado1)
+    resultado = game.mover(game.jugadores[0].key, 0, game.turno.dado1)
     with self.assertRaises(KeyError):
       resultado['error']
     self.assertEqual(game.jugadores[0].fichas[0].posicion, game.jugadores[0].salida + game.turno.dado1)
 
     # Mueva lo del segundo dado con otra ficha
-    resultado = game.mover(game.jugadores[0].fichas[1], game.turno.dado2)
+    resultado = game.mover(game.jugadores[0].key, 1, game.turno.dado2)
     with self.assertRaises(KeyError):
       resultado['error']
     self.assertEqual(game.jugadores[0].fichas[1].posicion, game.jugadores[0].salida + game.turno.dado2)
@@ -303,10 +311,10 @@ class GameTest(unittest.TestCase):
     if game.turno.dado1 == game.turno.dado2:
       siguiente_jugador = game.jugadores[0]
 
-    game.lanzar(siguiente_jugador)
+    game.lanzar(siguiente_jugador.key)
 
     # Mueva la suma de ambos dados
-    resultado = game.mover(siguiente_jugador.fichas[2], game.turno.dado1 + game.turno.dado2)
+    resultado = game.mover(siguiente_jugador.key, 2, game.turno.dado1 + game.turno.dado2)
     with self.assertRaises(KeyError):
       resultado['error']
     self.assertEqual(siguiente_jugador.fichas[2].posicion, siguiente_jugador.salida + game.turno.dado1 + game.turno.dado2)
@@ -326,12 +334,12 @@ class GameTest(unittest.TestCase):
           jugador_actual = jugador
           break
       # El jugador que corresponda lance los dados
-      game.lanzar(jugador_actual)
+      game.lanzar(jugador_actual.key)
 
       # Si saca pares
       if game.turno.dado1 == game.turno.dado2:
         # Saque las fichas de la carcel
-        resultado = game.sacar_de_la_carcel(jugador_actual)
+        resultado = game.sacar_de_la_carcel(jugador_actual.key)
         with self.assertRaises(KeyError):
           resultado['error']
 
@@ -339,18 +347,18 @@ class GameTest(unittest.TestCase):
         self.assertTrue(all([not ficha.encarcelada for ficha in jugador_actual.fichas]))
 
         # Intente mover la ficha que salio de la carcel
-        resultado = game.mover(jugador_actual.fichas[3], game.turno.dado1)
+        resultado = game.mover(jugador_actual.key, 3, game.turno.dado1)
         self.assertDictContainsSubset(resultado, { 'error': True })
         self.assertEqual(jugador_actual.fichas[3].posicion, jugador_actual.salida)
 
         # Intente mover la suma de los dos dados
         posicion_ficha0 = jugador_actual.fichas[0].posicion
-        resultado = game.mover(jugador_actual.fichas[0], game.turno.dado1 + game.turno.dado2)
+        resultado = game.mover(jugador_actual.key, 0, game.turno.dado1 + game.turno.dado2)
         self.assertDictContainsSubset(resultado, { 'error': True })
         self.assertEqual(jugador_actual.fichas[0].posicion, posicion_ficha0)
 
         # Mueva el resultado de un dado
-        resultado = game.mover(jugador_actual.fichas[0], game.turno.dado1)
+        resultado = game.mover(jugador_actual.key, 0, game.turno.dado1)
         with self.assertRaises(KeyError):
           resultado['error']
         self.assertEqual(jugador_actual.fichas[0].posicion, posicion_ficha0 + game.turno.dado1)
@@ -363,7 +371,7 @@ class GameTest(unittest.TestCase):
         break
 
       # Si no saca pares mueva para que sea el turno del siguiente jugador
-      game.mover(jugador_actual.fichas[0], game.turno.dado1 + game.turno.dado2)
+      game.mover(jugador_actual.key, 0, game.turno.dado1 + game.turno.dado2)
 
       # Devuelva la ficha para hacer las pruebas predecibles
       jugador_actual.fichas[0].posicion = jugador_actual.salida
@@ -379,14 +387,14 @@ class GameTest(unittest.TestCase):
     game.jugadores[2].fichas[0].posicion = game.jugadores[0].salida + 5
 
     # Lance los dados
-    game.lanzar(game.jugadores[0])
+    game.lanzar(game.jugadores[0].key)
 
     # ubique los dados para la prueba
     game.turno.dado1 = 5
     game.turno.dado2 = 4
 
     # Meta a la carcel la ficha del jugador 2
-    game.mover(game.jugadores[0].fichas[0], 5)
+    game.mover(game.jugadores[0].key, 0, 5)
 
     # Verifique que queda encarcelada
     self.assertTrue(game.jugadores[2].fichas[0].encarcelada)
@@ -398,14 +406,14 @@ class GameTest(unittest.TestCase):
     self.assertEqual(game.jugadores[2].fichas[0].posicion, game.jugadores[2].salida)
 
     # Intente mover la misma ficha con la que metio a la carcel con el otro dado
-    resultado = game.mover(game.jugadores[0].fichas[0], 4)
+    resultado = game.mover(game.jugadores[0].key, 0, 4)
 
     # Verifique que no se puede
     self.assertDictContainsSubset(resultado, { 'error': True })
     self.assertEqual(game.jugadores[0].fichas[0].posicion, game.jugadores[0].salida + 5)
 
     # Mueva otra ficha donde ya tenia una el mismo jugador
-    game.mover(game.jugadores[0].fichas[1], 4)
+    game.mover(game.jugadores[0].key, 1, 4)
 
     # Verifique que no se va para la carcel ninguna de las dos
     self.assertFalse(game.jugadores[0].ficha[3].encarcelada)
@@ -424,7 +432,7 @@ class GameTest(unittest.TestCase):
     game.turno.dado2 = 2
 
     # Mueva a la misma casilla
-    game.mover(game.jugadores[0].fichas[0], 7)
+    game.mover(game.jugadores[0].key, 0, 7)
 
     # Verifique que no este encarcelada
     self.assertFalse(game.jugadores[2].ficha[0].encarcelada)
@@ -442,7 +450,7 @@ class GameTest(unittest.TestCase):
     game.turno.dado2 = 6
 
     # Mueva a la misma casilla
-    game.mover(game.jugadores[0].fichas[0], 12)
+    game.mover(game.jugadores[0].key, 0, 12)
 
     # Verifique que no este encarcelada
     self.assertFalse(game.jugadores[2].ficha[0].encarcelada)
@@ -460,7 +468,7 @@ class GameTest(unittest.TestCase):
     game.turno.dado1 = 3
 
     # Mueva a la misma casilla
-    game.mover(game.jugadores[0].fichas[0], 3)
+    game.mover(game.jugadores[0].key, 0, 3)
 
     # Verifique que no este encarcelada
     self.assertFalse(game.jugadores[2].ficha[0].encarcelada)
@@ -492,12 +500,12 @@ class GameTest(unittest.TestCase):
         ficha.posicion = jugador_actual.salida
 
       # El jugador que corresponda lance los dados
-      game.lanzar(jugador_actual)
+      game.lanzar(jugador_actual.key)
 
       # Si saca pares
       if game.turno.dado1 == game.turno.dado2:
         # Saque las fichas de la carcel
-        game.sacar_de_la_carcel(jugador_actual)
+        game.sacar_de_la_carcel(jugador_actual.key)
 
         # Todas las fichas del otro jugador deben estar encarceladas
         self.assertTrue(all([ficha.encarcelada for ficha in otro_jugador.fichas]))
@@ -505,7 +513,7 @@ class GameTest(unittest.TestCase):
         break
 
       # Si no saca pares mueva para que sea el turno del siguiente jugador
-      game.mover(jugador_actual.fichas[0], game.turno.dado1 + game.turno.dado2)
+      game.mover(jugador_actual.key, 0, game.turno.dado1 + game.turno.dado2)
 
       # Devuelva la ficha para hacer las pruebas predecibles
       jugador_actual.fichas[0].posicion = jugador_actual.salida
@@ -528,15 +536,15 @@ class GameTest(unittest.TestCase):
           break
 
       # El jugador que corresponda lance los dados
-      game.lanzar(jugador_actual)
+      game.lanzar(jugador_actual.key)
 
       # Si saca pares
       if game.turno.dado1 == game.turno.dado2:
         # Saque las fichas de la carcel
-        game.sacar_de_la_carcel(jugador_actual)
+        game.sacar_de_la_carcel(jugador_actual.key)
 
         # Debe poder mover la ficha que acaba de sacar de la carcel
-        resultado = game.mover(jugador_actual.fichas[-1], game.turno.dado1)
+        resultado = game.mover(jugador_actual.key, -1, game.turno.dado1)
 
         with self.assertRaises(KeyError):
           resultado['error']
@@ -559,19 +567,19 @@ class GameTest(unittest.TestCase):
     game.jugadores[2].ficha[0].posicion = ficha.posicion + 4
 
     # Lance los dados
-    game.lanzar(game.jugadores[0])
+    game.lanzar(game.jugadores[0].key)
 
     # Organice los dados
     game.turno.dado1 = 4
 
     # Mueva la ficha
-    game.mover(ficha, 4)
+    game.mover(game.jugadores[0].key, 3, 4)
 
     # Verifique que la otra ficha este en la carcel
     self.assertTrue(game.jugadores[2].ficha[0].encarcelada)
 
     # Intente mover el otro dado
-    resultado = game.mover(ficha, game.turno.dado2)
+    resultado = game.mover(game.jugadores[0].key, 3, game.turno.dado2)
 
     # Verifique que no se puede
     self.assertDictContainsSubset(resultado, { 'error': True })
@@ -586,11 +594,11 @@ class GameTest(unittest.TestCase):
     game.jugadores[2].fichas[0].posicion = game.jugadores[0].salida + 4
 
     # Lance los dados y acomodelos
-    game.lanzar(game.jugadores[0])
+    game.lanzar(game.jugadores[0].key)
     game.turno.dado1 = 4
 
     # Mueva la ficha sin comerse la que podia comerse
-    game.mover(game.jugadores[0].fichas[0], 4 + game.turno.dado2)
+    game.mover(game.jugadores[0].key, 0, 4 + game.turno.dado2)
 
     # Sople la ficha que no comio
     resultado = game.soplar(game.jugadores[0].fichas[0])
@@ -615,13 +623,13 @@ class GameTest(unittest.TestCase):
           jugador_actual = jugador
           break
       # El jugador que corresponda lance los dados
-      game.lanzar(jugador_actual)
+      game.lanzar(jugador_actual.key)
 
       # Si saca pares
       if game.turno.dado1 == game.turno.dado2:
 
         # Mueva una ficha en vez de sacar de la carcel
-        game.mover(jugador_actual.fichas[0], game.turno.dado1 + game.turno.dado2)
+        game.mover(jugador_actual.key, 0, game.turno.dado1 + game.turno.dado2)
 
         # Sople la ficha que movio
         resultado = game.soplar(jugador_actual.fichas[0])
@@ -636,7 +644,7 @@ class GameTest(unittest.TestCase):
         break
 
       # Si no saca pares mueva para que sea el turno del siguiente jugador
-      game.mover(jugador_actual.fichas[0], game.turno.dado1 + game.turno.dado2)
+      game.mover(jugador_actual.key, 0, game.turno.dado1 + game.turno.dado2)
 
       # Devuelva la ficha para hacer las pruebas predecibles
       jugador_actual.fichas[0].posicion = jugador_actual.salida
@@ -646,18 +654,18 @@ class GameTest(unittest.TestCase):
 
     sacar_de_la_carcel(game)
 
-    game.lanzar(game.jugadores[0])
+    game.lanzar(game.jugadores[0].key)
 
     # Ponga una ficha en un seguro
     game.jugadores[2].fichas[0].posicion = game.jugadores[0].salida + 7
 
     # Lance los dados y acomodelos
-    game.lanzar(game.jugadores[0])
+    game.lanzar(game.jugadores[0].key)
     game.turno.dado1 = 4
     game.turno.dado2 = 3
 
     # Mueva la ficha sin comerse la que podia comerse
-    game.mover(game.jugadores[0].fichas[0], 7)
+    game.mover(game.jugadores[0].key, 0, 7)
 
     # Sople la ficha que movio
     resultado = game.soplar(game.jugadores[0].fichas[0])
@@ -679,11 +687,11 @@ class GameTest(unittest.TestCase):
     ficha.posicion = 5 # Se gana en 8
 
     # Lance y acomode los dados
-    game.lanzar(game.jugadores[0])
+    game.lanzar(game.jugadores[0].key)
     game.turno.dado1 = 3
 
     # Corone la ficha
-    game.mover(ficha, 3)
+    game.mover(game.jugadores[0].key, 0, 3)
 
     # Verifique que la ficha queda coronada
     self.assertTrue(ficha.coronada)
@@ -705,11 +713,11 @@ class GameTest(unittest.TestCase):
       game.turno.pares = 2
 
       # El jugador que corresponda lance los dados
-      game.lanzar(jugador_actual)
+      game.lanzar(jugador_actual.key)
 
       # Si saca pares
       if game.turno.dado1 == game.turno.dado2:
-        resultado = game.coronar(jugador_actual.fichas[0])
+        resultado = game.coronar(jugador_actual.key, 0)
 
         # Verifique que no hay error
         with self.assertRaises(KeyError):
@@ -722,7 +730,7 @@ class GameTest(unittest.TestCase):
 
       # else (si no saco pares)
       # Intente coronar sin haber sacado pares
-      resultado = game.coronar(jugador_actual.fichas[0])
+      resultado = game.coronar(jugador_actual.key, 0)
 
       # Verifique que no es procedente
       self.assertDictContainsSubset(resultado, { 'error': True })
@@ -731,7 +739,7 @@ class GameTest(unittest.TestCase):
       self.assertFalse(jugador_actual.fichas[0].coronada)
 
       # Si no saca pares mueva para que sea el turno del siguiente jugador
-      game.mover(jugador_actual.fichas[0], game.turno.dado1 + game.turno.dado2)
+      game.mover(jugador_actual.key, 0, game.turno.dado1 + game.turno.dado2)
 
       # Devuelva la ficha para hacer las pruebas predecibles
       jugador_actual.fichas[0].posicion = jugador_actual.salida
@@ -752,11 +760,11 @@ class GameTest(unittest.TestCase):
     ficha.posicion = 5 # gana cuando llega al 8
 
     # Lance y acomode los dados
-    game.lanzar(game.jugadores[0])
+    game.lanzar(game.jugadores[0].key)
     game.turno.dado1 = 3
 
     # Corone la ficha
-    game.mover(ficha, 3)
+    game.mover(game.jugadores[0].key, 3, 3)
 
     # Verifique que el jugador 1 haya ganado
     self.assertTrue(game.jugadores[0].finalizado)

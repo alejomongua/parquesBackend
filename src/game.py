@@ -2,37 +2,26 @@ import time
 import uuid
 
 # import my_firebase
-import tablero
-import jugador
+from tablero import Tablero
+from jugador import Jugador
 from turno import Turno
 import constants
 
 class Game():
   """Clase principal del juego"""
 
-  def __init__(self, posiciones: int, publico: bool, estado = None):
+  def __init__(self, publico: bool = False):
+    self.publico = publico
+    self.iniciado = False
+    self.finalizado = False
+    self.created_at = time.time()
+    self.started_at = None
+    self.last_turn = None
     self.jugadores = []
-    if estado is None:
-      self.tablero = tablero.Tablero(posiciones)
-      self.publico = publico
-      self.iniciado = False
-      self.id = uuid.uuid4()
-      self.finalizado = False
-      self.created_at = time.time()
-      self.started_at = None
-      self.last_turn = None
-      self.turno = Turno()
-    else:
-      self.tablero = tablero.Tablero(None, estado['tablero'])
-      self.publico = estado['publico']
-      self.iniciado = estado['iniciado']
-      for jugador in estado['jugadores']:
-        self.jugadores.append(jugador.Jugador(None, None, None, estado['jugador']))
-      self.id = estado['id']
-      self.finalizado = estado['finalizado']
-      self.created_at = estado['created_at']
-      self.started_at = estado['started_at']
-      self.last_turn = estado['last_turn']
+    # Estos se deben asignar después de crear el juego
+    self.id = None
+    self.turno = None
+    self.tablero = None
   
   def dump_object(self):
     """Retorna el estado actual del objeto"""
@@ -71,10 +60,13 @@ class Game():
         'mensaje': 'No se puede unir a esta partida porque ya inició'
       }
 
-    self.jugadores.append(jugador.Jugador(color, nickname, len(self.jugadores)))
+    jugador = Jugador(color, nickname)
+    jugador.key = uuid.uuid4()
+    self.jugadores.append(jugador)
     self.tablero.add_color(color)
     return {
-      'success': True
+      'success': True,
+      'key': jugador.key
     }
 
   def iniciar(self):
@@ -97,8 +89,16 @@ class Game():
 
     return { 'success': True }
 
-  def lanzar(self, jugador: jugador.Jugador):
+  def lanzar(self, player_key: str):
     """Realiza un lanzamiento de dados"""
+    jugador = self.encontrar_jugador(player_key)
+
+    if jugador is None:
+      return {
+        'error': True,
+        'mensaje': 'La llave no coincide con ningún jugador en este juego'
+      }
+
     if False: # To do verificar si es el turno
       return {
         'error': True,
@@ -107,7 +107,15 @@ class Game():
 
     # to do
 
-  def mover(self, jugador: jugador.Jugador, ficha: int):
+  def mover(self, player_key: str, ficha: int, cantidad: int):
+    jugador = self.encontrar_jugador(player_key)
+
+    if jugador is None:
+      return {
+        'error': True,
+        'mensaje': 'La llave no coincide con ningún jugador en este juego'
+      }
+
     if ficha > len(jugador.fichas):
       return {
         'error': True,
@@ -128,8 +136,16 @@ class Game():
 
     # To do
 
-  def sacar_de_la_carcel(self, jugador: jugador.Jugador):
+  def sacar_de_la_carcel(self, player_key: str):
     """Saca fichas de la carcel, depende del par que sacó y de las fichas que estén en la carcel"""
+    jugador = self.encontrar_jugador(player_key)
+
+    if jugador is None:
+      return {
+        'error': True,
+        'mensaje': 'La llave no coincide con ningún jugador en este juego'
+      }
+
     if not any([not ficha.encarcelada for ficha in jugador.fichas]):
       return {
         'error': True,
@@ -155,8 +171,16 @@ class Game():
     # To do
     return {}
 
-  def coronar(self, ficha):
+  def coronar(self, player_key: str, ficha: int):
     """Corona una ficha por pares"""
+    jugador = self.encontrar_jugador(player_key)
+
+    if jugador is None:
+      return {
+        'error': True,
+        'mensaje': 'La llave no coincide con ningún jugador en este juego'
+      }
+
     # to do
     return {}
 
@@ -165,16 +189,35 @@ class Game():
     # To do
     return {}
 
+  def almacenar(self):
+    """Almacena el estado del juego en la base de datos"""
+
+    # To do
+
+  def encontrar_jugador(self, key: str):
+    """Encuentra un jugador por su llave"""
+    for jugador in self.jugadores:
+      if jugador.key == key:
+        return jugador
+
+    # Si no encuentra ninguno retorna None
+    return None
+
   @classmethod
   def retrieve_from_database(cls, id: str):
     """Trae una instancia de un juego desde la base de datos"""
+
     # to do
-    pass
 
   @classmethod
   def create(cls, posiciones: int = 4, publico: bool = False):
     if posiciones >= 4 or posiciones <= 8:
-      return cls(posiciones, publico)
+      game = cls(publico)
+      game.id = uuid.uuid4()
+      game.turno = Turno()
+      game.tablero = Tablero(posiciones)
+      game.almacenar()
+      return game
 
     return {
       'error': True,

@@ -3,23 +3,15 @@
 from ficha import Ficha
 
 class Jugador(object):
-  def __init__(self, color: str, nickname: str, orden: int, estado = None):
-    if estado is None:
-      self.color = color
-      self.nickname = nickname
-      self.salida = orden * 17
-      self.retirado = False
-      self.finalizado = False
-      self.fichas = [Ficha(self), Ficha(self), Ficha(self), Ficha(self)]
-    else:
-      self.color = estado['color']
-      self.nickname = estado['nickname']
-      self.salida = estado['salida']
-      self.retirado = estado['retirado']
-      self.finalizado = estado['finalizado']
-      self.fichas = []
-      for ficha in estado['fichas']:
-        Ficha(self, ficha)
+  def __init__(self, color: str, nickname: str):
+    self.color = color
+    self.nickname = nickname
+    self.retirado = False
+    self.finalizado = False
+    self.fichas = [Ficha(), Ficha(), Ficha(), Ficha()]
+    # Asociar después de instanciar
+    self.salida = 0
+    self.key = None
 
   def cantidad_dados(self):
     """Determina la cantidad de dados que puede lanzar un jugador"""
