@@ -29,22 +29,20 @@ class Turno():
 
   """
 
-  def __init__(self, estado: dict = None):
+  def __init__(self):
     """
     Constructor: Se puede pasar el estado para no
     iniciar con los valores por defecto cuando se
     traiga desde la base de datos
     """
-    if estado is None:
-      self.color = None
-      self.dado1 = None
-      self.dado2 = None
-      self.pares = None
-    else:
-      self.color = estado['color']
-      self.dado1 = estado['dado1']
-      self.dado2 = estado['dado2']
-      self.pares = estado['pares']
+    self.color = None
+    self.dado1 = None
+    self.dado2 = None
+    self.pares = None
+    self.soplable = [False, False, False, False]
+    self.locked = [False, False, False, False]
+    self.color_soplable = None
+    self.intentos = 3
 
   def dump_object(self):
     """Retorna el estado actual del objeto"""
@@ -52,11 +50,14 @@ class Turno():
       'color': self.color,
       'dado1': self.dado1,
       'dado2': self.dado2,
-      'pares': self.pares
+      'pares': self.pares,
+      'intentos': self.intentos
     }
 
   def lanzar(self, dados: int = 2):
     """Lanza los dados"""
+    self.soplable = [False, False, False, False]
+
     if dados == 2:
       self.dado2 = random.randint(1, 6)
     else:
@@ -73,6 +74,7 @@ class Turno():
       self.pares = None
 
   def siguiente_turno(self, color: str):
-    self.color = color,
+    self.color = color
     self.dado1 = None
     self.dado2 = None
+    self.locked = [False, False, False, False]

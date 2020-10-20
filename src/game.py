@@ -62,7 +62,7 @@ class Game():
       }
 
     jugador = Jugador(color, nickname)
-    jugador.key = uuid.uuid4()
+    jugador.key = str(uuid.uuid4())
     self.jugadores.append(jugador)
     self.tablero.add_color(color)
     return {
@@ -70,7 +70,7 @@ class Game():
       'key': jugador.key
     }
 
-  def iniciar(self):
+  def start(self):
     """Se inicia la partida, ya no se pueden unir más jugadores"""
     if len(self.jugadores) < 2:
       return {
@@ -105,12 +105,13 @@ class Game():
 
     # Asigna el primer turno
     self.turno.color = self.jugadores[0].color
+    self.turno.intentos = 3
 
     # Marca el inicio del juego
     self.started_at = time.time()
     self.iniciado = True
 
-    return { 'success': True }
+    return self.almacenar()
 
   def lanzar(self, player_key: str):
     """Realiza un lanzamiento de dados"""
@@ -122,54 +123,38 @@ class Game():
         'mensaje': 'La llave no coincide con ningún jugador en este juego'
       }
 
-    if self.turno.color == jugador.color:
+    if self.turno.color != jugador.color:
       return {
         'error': True,
         'mensaje': 'Espere su turno'
       }
 
-    if self.turno.dado1 is not None:
-      return {
-        'error': True,
-        'mensaje': 'No es momento de lanzar los dados'
-      }
+    if all([ficha.encarcelada for ficha in jugador.fichas if not ficha.coronada]):
+      self.turno.lanzar(2)
 
-    self.turno.lanzar(jugador.cantidad_dados())
+      self.turno.intentos -= 1
+
+      if self.turno.intentos == 0 and self.turno.dado1 != self.turno.dado2:
+        self.siguiente_turno()
+    else:
+      if self.turno.dado1 is not None:
+        return {
+          'error': True,
+          'mensaje': 'No es momento de lanzar los dados'
+        }
+
+      self.turno.lanzar(jugador.cantidad_dados())
 
     # Incremente el contador de pares si aplica
     if self.turno.dado1 == self.turno.dado2:
-      self.turno.pares += 1
-      if any([ficha.encarcelada for ficha in jugador.fichas]):
-        jugador.puede_sacar_de_la_carcel = True
+      if self.turno.pares is None:
+        self.turno.pares = 1
+      else:
+        self.turno.pares += 1
     else:
       self.turno.pares = None
 
-    # Verifique si puede comer
-    for ficha in jugador.fichas:
-      if ficha.encarcelada or ficha.coronada or ficha.recta_final:
-        continue
-
-      for otro_jugador in self.jugadores:
-        if jugador.color == otro_jugador.color:
-          continue
-
-        for otra_ficha in otro_jugador.fichas:
-          if otra_ficha.encarcelada or otra_ficha.coronada or otra_ficha.recta_final:
-            continue
-
-          casilla = ficha.posicion + self.turno.dado1
-          if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
-            jugador.puede_comer = True
-
-          casilla = ficha.posicion + self.turno.dado2
-          if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
-            jugador.puede_comer = True
-
-          casilla = ficha.posicion + self.turno.dado1 + self.turno.dado2
-          if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
-            jugador.puede_comer = True
-
-    return self.dump_object()
+    return self.almacenar()
 
   def mover(self, player_key: str, ficha: int, cantidad: int):
     jugador = self.encontrar_jugador(player_key)
@@ -186,7 +171,7 @@ class Game():
         'mensaje': 'Ficha erronea'
       }
 
-    if self.turno.color == jugador.color:
+    if self.turno.color != jugador.color:
       return {
         'error': True,
         'mensaje': 'Espere su turno'
@@ -200,7 +185,7 @@ class Game():
 
     esta_ficha = jugador.fichas[ficha]
     cantidad_legal = cantidad == self.turno.dado1 or cantidad == self.turno.dado2 or cantidad == self.turno.dado1 + self.turno.dado2
-    if esta_ficha.encarcelada or esta_ficha.coronada or not cantidad_legal:
+    if esta_ficha.encarcelada or esta_ficha.coronada or not cantidad_legal or cantidad == 0 or self.turno.locked[ficha]:
       return {
         'error': True,
         'mensaje': 'Movimiento ilegal'
@@ -247,15 +232,7 @@ class Game():
         else:
           esta_ficha.posicion = (posicion_actual + movimiento + 1) % self.tablero.posiciones * 17
 
-    # Determine cuantos dados usó
-    if cantidad == self.turno.dado1:
-      self.turno.dado1 = 0
-    elif cantidad == self.turno.dado2:
-      self.turno.dado2 = 0
-    else:
-      self.turno.dado1 = 0
-      self.turno.dado2 = 0
-
+    comio = False
     # Revise si metió alguna ficha a la carcel
     if not esta_ficha.recta_final and not self.tablero.seguro(esta_ficha.posicion) and not self.tablero.salida(esta_ficha.posicion):
       for otro_jugador in self.jugadores:
@@ -267,10 +244,101 @@ class Game():
             continue
 
           if otra_ficha.posicion == esta_ficha.posicion:
+            comio = True
             otra_ficha.encarcelada = True
             otra_ficha.posicion = otro_jugador.salida
 
-    return self.dump_object()
+    # Verifique si se puede soplar alguna ficha, este proceso es largo y complicado, la lógica es la siguiente:
+    # Se puede soplar en cualquiera de los siguientes casos
+    # Si tiene fichas en la carcel y sacó pares
+    # Si movió con la suma de los dados y no comió y alguna ficha podía comer
+    # Si movió con uno de los dados y no comió y podía comer con la suma de las fichas
+    # Si movió con uno de los dados y no comió y podía comer con ese valor y el otro dado tiene un valor diferente
+
+    # Si tiene fichas en la carcel y sacó pares
+    if len([0 for ficha in jugador.fichas if ficha.encarcelada]) > 0 and self.turno.dado1 == self.turno.dado2:
+      self.turno.color_soplable = jugador.color
+      self.turno.soplable[ficha] = True
+
+    if not comio:
+      # Si movió con la suma de los dados y no comió y alguna ficha podía comer
+      if self.turno.dado1 + self.turno.dado2 == cantidad:
+        for contador in range(4):
+          ficha1 = jugador.fichas[contador]
+          if ficha1.encarcelada or ficha1.coronada or ficha1.recta_final or contador == ficha:
+            continue
+    
+          for otro_jugador in self.jugadores:
+            if jugador.color == otro_jugador.color:
+              continue
+    
+            for otra_ficha in otro_jugador.fichas:
+              if otra_ficha.encarcelada or otra_ficha.coronada or otra_ficha.recta_final:
+                continue
+    
+              casilla = ficha1.posicion + self.turno.dado1
+              if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
+                self.turno.color_soplable = jugador.color
+                self.turno.soplable[ficha] = True
+                continue
+    
+              casilla = ficha1.posicion + self.turno.dado2
+              if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
+                self.turno.color_soplable = jugador.color
+                self.turno.soplable[ficha] = True
+                continue
+    
+              casilla = ficha1.posicion + self.turno.dado1 + self.turno.dado2
+              if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
+                self.turno.color_soplable = jugador.color
+                self.turno.soplable[ficha] = True
+                continue
+
+      else:
+        for contador in range(4):
+          ficha1 = jugador.fichas[contador]
+          if ficha1.encarcelada or ficha1.coronada or ficha1.recta_final or contador == ficha:
+            continue
+    
+          for otro_jugador in self.jugadores:
+            if jugador.color == otro_jugador.color:
+              continue
+    
+            for otra_ficha in otro_jugador.fichas:
+              if otra_ficha.encarcelada or otra_ficha.coronada or otra_ficha.recta_final:
+                continue
+    
+              # Si movió con uno de los dados y no comió y podía comer con la suma de las fichas
+              casilla = ficha1.posicion + self.turno.dado1 + self.turno.dado2
+              if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
+                self.turno.color_soplable = jugador.color
+                self.turno.soplable[ficha] = True
+                continue
+              
+              # Si movió con uno de los dados y no comió y podía comer con ese valor y el otro dado tiene un valor diferente
+              if self.turno.dado1 != self.turno.dado2:
+                casilla = ficha1.posicion + cantidad
+                if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
+                  self.turno.color_soplable = jugador.color
+                  self.turno.soplable[ficha] = True
+                  continue
+
+    # Determine cuantos dados usó
+    if cantidad == self.turno.dado1:
+      self.turno.dado1 = 0
+    elif cantidad == self.turno.dado2:
+      self.turno.dado2 = 0
+    else:
+      self.turno.dado1 = 0
+      self.turno.dado2 = 0
+
+    if self.turno.dado1 == 0 and self.turno.dado2 == 0:
+      if self.turno.pares is None:
+        self.siguiente_turno()
+      else:
+        self.turno.siguiente_turno(self.turno.color)
+
+    return self.almacenar()
 
   def sacar_de_la_carcel(self, player_key: str):
     """Saca fichas de la carcel, depende del par que sacó y de las fichas que estén en la carcel"""
@@ -282,7 +350,7 @@ class Game():
         'mensaje': 'La llave no coincide con ningún jugador en este juego'
       }
 
-    if self.turno.color == jugador.color:
+    if self.turno.color != jugador.color:
       return {
         'error': True,
         'mensaje': 'Espere su turno'
@@ -294,41 +362,46 @@ class Game():
         'mensaje': 'Debe lanzar los dados primero'
       }
 
-    if self.turno.dado1 == self.turno.dado2:
+    if self.turno.dado1 != self.turno.dado2:
       return {
         'error': True,
         'mensaje': 'Necesita sacar pares para salir de la carcel'
       }
 
-    fichas_encarceladas = [ficha for ficha in jugador.fichas if ficha.encarcelada]
-    cantidad_encarceladas = len(fichas_encarceladas)
-    if cantidad_encarceladas == 0:
+    # Si no tiene fichas en la carcel
+    if len([0 for ficha in jugador.fichas if ficha.encarcelada]) == 0:
       return {
         'error': True,
         'mensaje': 'No tiene fichas en la carcel'
       }
 
     contador = 0
-    for ficha in fichas_encarceladas:
-      ficha.encarcelada = False
-      # Si no es par de 6 ni de 1, saque solo 2
-      if self.turno.dado1 != 6 and self.turno.dado2 != 1:
-        contador += 1
-        if contador == 2:
-          break
+
+    # Almacene cuales fichas libera, para que no se pueda mover si es solo una
+    fichas_liberadas = []
+    for ficha in range(4):
+      esta_ficha = jugador.fichas[ficha]
+      if esta_ficha.encarcelada and not esta_ficha.coronada:
+        esta_ficha.encarcelada = False
+        fichas_liberadas.append(ficha)
+        # Si no es par de 6 ni de 1, saque solo 2
+        if self.turno.dado1 != 6 and self.turno.dado2 != 1:
+          contador += 1
+          if contador == 2:
+            break
 
     self.turno.dado2 = 0
-    if cantidad_encarceladas == 1:
+    if len(fichas_liberadas) == 1:
+      # Si le quedan más fichas, la ficha que sacó queda bloqueada
+      cantidad_no_coronadas = len([0 for ficha in jugador.fichas if not ficha.coronada])
+      if cantidad_no_coronadas != 1:
+        self.turno.locked[fichas_liberadas[0]] = True
       self.turno.dado2 = 0
-
+    else:
+      self.turno.siguiente_turno(self.turno.color)
     self.turno.pares = 0
 
-    return self.dump_object()
-  
-  def start(self):
-    """Inicia el juego"""
-    # To do
-    return {}
+    return self.almacenar()
 
   def coronar(self, player_key: str, ficha: int):
     """Corona una ficha por pares"""
@@ -340,17 +413,43 @@ class Game():
         'mensaje': 'La llave no coincide con ningún jugador en este juego'
       }
 
-    # to do
-    return {}
+    if self.turno.pares is None or self.turno.pares < 3:
+      return {
+        'error': True,
+        'mensaje': 'Tiene que sacar tres pares seguidos sin sacar de la carcel'
+      }
 
-  def soplar(self, ficha):
+    jugador.fichas[ficha].coronada = True
+    self.siguiente_turno()
+    return self.almacenar()
+
+  def soplar(self, player_key: str, ficha: int):
     """Sopla una ficha para enviarla a la carcel"""
-    # To do
-    return {}
+    jugador = self.encontrar_jugador(player_key)
+
+    if jugador is None:
+      return {
+        'error': True,
+        'mensaje': 'La llave no coincide con ningún jugador en este juego'
+      }
+
+    if not self.turno.soplable[ficha]:
+      return {
+        'error': True,
+        'mensaje': 'No se puede soplar esa ficha'
+      }
+
+    # Encuentre el jugador por el color
+    for jugador1 in self.jugadores:
+      if jugador1.color == self.turno.color_soplable:
+        jugador1.fichas[ficha].encarcelada = True
+        break
+
+    return self.almacenar()
 
   def almacenar(self):
     """Almacena el estado del juego en la base de datos"""
-
+    return self.dump_object()
     # To do
 
   def encontrar_jugador(self, key: str):
@@ -362,6 +461,14 @@ class Game():
     # Si no encuentra ninguno retorna None
     return None
 
+  def siguiente_turno(self):
+    """Hace el setup para el siguiente turno"""
+    indice_actual = [jugador.color for jugador in self.jugadores].index(self.turno.color)
+    siguiente_jugador = self.jugadores[(indice_actual + 1) % len(self.jugadores)]
+    self.turno.siguiente_turno(siguiente_jugador.color)
+    self.turno.pares = None
+    self.turno.intentos = siguiente_jugador.cantidad_lanzamientos()
+
   @classmethod
   def retrieve_from_database(cls, id: str):
     """Trae una instancia de un juego desde la base de datos"""
@@ -372,7 +479,7 @@ class Game():
   def create(cls, posiciones: int = 4, publico: bool = False):
     if posiciones >= 4 or posiciones <= 8:
       game = cls(publico)
-      game.id = uuid.uuid4()
+      game.id = str(uuid.uuid4())
       game.turno = Turno()
       game.tablero = Tablero(posiciones)
       game.almacenar()
