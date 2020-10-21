@@ -19,6 +19,11 @@ class Game():
     self.started_at = None
     self.last_turn = None
     self.jugadores = []
+    # En el atributo fichas_en_casillas, las llaves son los números de casilla
+    # y el valor es un array de fichas de colores, esta variable sirve para no
+    # tener que iterar por cada ficha cada vez que quiero verificar si una ficha
+    # puede comer
+    self.fichas_en_casillas = {}
     # Estos se deben asignar después de crear el juego
     self.id = None
     self.turno = None
@@ -154,6 +159,9 @@ class Game():
     else:
       self.turno.pares = None
 
+    self.actualizar_fichas_en_casillas()
+    self.turno.reset_actions()
+
     return self.almacenar()
 
   def mover(self, player_key: str, ficha: int, cantidad: int):
@@ -232,105 +240,44 @@ class Game():
         else:
           esta_ficha.posicion = (posicion_actual + movimiento + 1) % self.tablero.posiciones * 17
 
-    comio = False
     # Revise si metió alguna ficha a la carcel
-    if not esta_ficha.recta_final and not self.tablero.seguro(esta_ficha.posicion) and not self.tablero.salida(esta_ficha.posicion):
-      for otro_jugador in self.jugadores:
-        if jugador.color == otro_jugador.color:
-          continue
-
-        for otra_ficha in otro_jugador.fichas:
-          if otra_ficha.encarcelada or otra_ficha.coronada or otra_ficha.recta_final:
-            continue
-
-          if otra_ficha.posicion == esta_ficha.posicion:
-            comio = True
+    comio = not self.tablero.seguro(esta_ficha.posicion) and \
+            not esta_ficha.recta_final and \
+            not self.tablero.salida(esta_ficha.posicion) and \
+            esta_ficha.posicion in self.fichas_en_casillas
+    ficha_que_se_comio = None
+    if comio:
+      for color_ficha in self.fichas_en_casillas[esta_ficha.posicion]:
+        color = color_ficha[0]
+        # Encuentre el jugador por el color
+        for otro_jugador in self.jugadores:
+          if otro_jugador.color == color:
+            otra_ficha = otro_jugador.fichas[color_ficha[1]]
+            # Lleve la ficha a la carcel
             otra_ficha.encarcelada = True
             otra_ficha.posicion = otro_jugador.salida
+            ficha_que_se_comio = [otro_jugador.color, esta_ficha.posicion]
+            break
 
-    # Verifique si se puede soplar alguna ficha, este proceso es largo y complicado, la lógica es la siguiente:
-    # Se puede soplar en cualquiera de los siguientes casos
-    # Si tiene fichas en la carcel y sacó pares
-    # Si movió con la suma de los dados y no comió y alguna ficha podía comer
-    # Si movió con uno de los dados y no comió y podía comer con la suma de las fichas
-    # Si movió con uno de los dados y no comió y podía comer con ese valor y el otro dado tiene un valor diferente
-
-    # Si tiene fichas en la carcel y sacó pares
-    if len([0 for ficha in jugador.fichas if ficha.encarcelada]) > 0 and self.turno.dado1 == self.turno.dado2:
-      self.turno.color_soplable = jugador.color
-      self.turno.soplable[ficha] = True
-
-    if not comio:
-      # Si movió con la suma de los dados y no comió y alguna ficha podía comer
-      if self.turno.dado1 + self.turno.dado2 == cantidad:
-        for contador in range(4):
-          ficha1 = jugador.fichas[contador]
-          if ficha1.encarcelada or ficha1.coronada or ficha1.recta_final or contador == ficha:
-            continue
-    
-          for otro_jugador in self.jugadores:
-            if jugador.color == otro_jugador.color:
-              continue
-    
-            for otra_ficha in otro_jugador.fichas:
-              if otra_ficha.encarcelada or otra_ficha.coronada or otra_ficha.recta_final:
-                continue
-    
-              casilla = ficha1.posicion + self.turno.dado1
-              if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
-                self.turno.color_soplable = jugador.color
-                self.turno.soplable[ficha] = True
-                continue
-    
-              casilla = ficha1.posicion + self.turno.dado2
-              if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
-                self.turno.color_soplable = jugador.color
-                self.turno.soplable[ficha] = True
-                continue
-    
-              casilla = ficha1.posicion + self.turno.dado1 + self.turno.dado2
-              if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
-                self.turno.color_soplable = jugador.color
-                self.turno.soplable[ficha] = True
-                continue
-
-      else:
-        for contador in range(4):
-          ficha1 = jugador.fichas[contador]
-          if ficha1.encarcelada or ficha1.coronada or ficha1.recta_final or contador == ficha:
-            continue
-    
-          for otro_jugador in self.jugadores:
-            if jugador.color == otro_jugador.color:
-              continue
-    
-            for otra_ficha in otro_jugador.fichas:
-              if otra_ficha.encarcelada or otra_ficha.coronada or otra_ficha.recta_final:
-                continue
-    
-              # Si movió con uno de los dados y no comió y podía comer con la suma de las fichas
-              casilla = ficha1.posicion + self.turno.dado1 + self.turno.dado2
-              if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
-                self.turno.color_soplable = jugador.color
-                self.turno.soplable[ficha] = True
-                continue
-              
-              # Si movió con uno de los dados y no comió y podía comer con ese valor y el otro dado tiene un valor diferente
-              if self.turno.dado1 != self.turno.dado2:
-                casilla = ficha1.posicion + cantidad
-                if otra_ficha.posicion == casilla and not self.tablero.seguro(casilla) and not self.tablero.salida(casilla):
-                  self.turno.color_soplable = jugador.color
-                  self.turno.soplable[ficha] = True
-                  continue
+      # En esta casilla solo deja este color en el mapa, para que si pone otra
+      # ficha ahí mismo no cuente como si hubiera comido      
+      self.fichas_en_casillas[esta_ficha.posicion] = [jugador.color, ficha]
 
     # Determine cuantos dados usó
     if cantidad == self.turno.dado1:
       self.turno.dado1 = 0
+      self.turno.acciones['mover_dado_1'] = ficha
+      self.turno.acciones['comio_dado_1'] = ficha_que_se_comio
     elif cantidad == self.turno.dado2:
       self.turno.dado2 = 0
+      self.turno.acciones['mover_dado_2'] = ficha
+      self.turno.acciones['comio_dado_2'] = ficha_que_se_comio
     else:
       self.turno.dado1 = 0
       self.turno.dado2 = 0
+      self.turno.acciones['mover_dado_1'] = ficha
+      self.turno.acciones['mover_dado_2'] = ficha
+      self.turno.acciones['comio_suma'] = ficha_que_se_comio
 
     if self.turno.dado1 == 0 and self.turno.dado2 == 0:
       if self.turno.pares is None:
@@ -401,6 +348,8 @@ class Game():
       self.turno.siguiente_turno(self.turno.color)
     self.turno.pares = 0
 
+    self.turno.acciones['sacar_de_la_carcel'] = True
+
     return self.almacenar()
 
   def coronar(self, player_key: str, ficha: int):
@@ -421,6 +370,9 @@ class Game():
 
     jugador.fichas[ficha].coronada = True
     self.siguiente_turno()
+
+    self.turno.acciones['coronar'] = True
+
     return self.almacenar()
 
   def soplar(self, player_key: str, ficha: int):
@@ -433,7 +385,48 @@ class Game():
         'mensaje': 'La llave no coincide con ningún jugador en este juego'
       }
 
-    if not self.turno.soplable[ficha]:
+    if not self.turno.color_soplable:
+      return {
+        'error': True,
+        'mensaje': 'No se puede soplar en este momento'
+      }
+
+    # Aquí viene la parte más complicada porque hay que considerar cada una de
+    # las posibilidades para saber si el soplido procede o no
+
+    ficha_soplable = False
+
+    # La primera bifurcación es si sacó o no pares
+    if self.turno.pares is None:
+      # Si no sacó pares, no se puede soplar si con cada dado se comió alguna
+      # o si con la suma de los dados se comió alguna
+      movio_dado_1 = self.turno.acciones.get('movio_dado_1', None)
+      movio_dado_2 = self.turno.acciones.get('movio_dado_2', None)
+      comio_dado_1 = self.turno.acciones.get('comio_dado_1', False)
+      comio_dado_2 = self.turno.acciones.get('comio_dado_2', False)
+      comio_suma = self.turno.acciones.get('comio_suma', False)
+      if self.turno.pares is None and (comio_suma or \
+         (comio_dado_1 and comio_dado_2)):
+        return {
+          'error': True,
+          'mensaje': 'No se puede soplar esa ficha'
+        }
+
+      # Si la ficha que están acusando si comió
+      if (ficha == movio_dado_1 and comio_dado_1) or (ficha == movio_dado_2 and comio_dado_2):
+        return {
+          'error': True,
+          'mensaje': 'No se puede soplar esa ficha'
+        }
+    # Verifique si la ficha en cuestión se puede soplar
+    # Si sacó de la carcel, no puede soplar ninguna ficha
+    if self.turno.acciones.get('sacar_de_la_carcel', False):
+      return {
+        'error': True,
+        'mensaje': 'No se puede soplar esa ficha'
+      }
+
+    if not ficha_soplable:
       return {
         'error': True,
         'mensaje': 'No se puede soplar esa ficha'
@@ -445,12 +438,41 @@ class Game():
         jugador1.fichas[ficha].encarcelada = True
         break
 
+    self.turno.color_soplable = False
+
     return self.almacenar()
 
   def almacenar(self):
     """Almacena el estado del juego en la base de datos"""
-    return self.dump_object()
+    self.last_turn = time.time()
+
     # To do
+
+    return self.dump_object()
+
+  def actualizar_fichas_en_casillas(self):
+    """
+    Itera sobre cada ficha de cada jugador que no esté encarcelada ni coronada
+    ni en la carcel para crear un diccionario con las fichas que hay en cada
+    casilla del tablero
+    """
+
+    # Verifica las fichas en las casillas: inicializa todo
+    self.fichas_en_casillas = {}
+
+    # Itera sobre cada ficha de cada jugador
+    for jugador in self.jugadores:
+      for ficha in range(4):
+        ficha1 = jugador.fichas[ficha]
+        # que no esté ni coronada ni encarcelada ni en la recta final
+        if any([ficha1.encarcelada, ficha1.coronada, ficha1.recta_final]):
+          continue
+
+        # Crea una lista de listas por cada casilla ocupada
+        if not ficha1.posicion in self.fichas_en_casillas:
+          self.fichas_en_casillas[ficha1.posicion] = [[jugador.color, ficha]]
+        else:
+          self.fichas_en_casillas[ficha1.posicion].append([jugador.color, ficha])
 
   def encontrar_jugador(self, key: str):
     """Encuentra un jugador por su llave"""

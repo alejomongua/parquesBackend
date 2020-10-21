@@ -39,10 +39,11 @@ class Turno():
     self.dado1 = None
     self.dado2 = None
     self.pares = None
-    self.soplable = [False, False, False, False]
     self.locked = [False, False, False, False]
     self.color_soplable = None
     self.intentos = 3
+    # En la variable acciones se almacenan los movimientos realizados en el último turno
+    self.acciones = {}
 
   def dump_object(self):
     """Retorna el estado actual del objeto"""
@@ -54,9 +55,12 @@ class Turno():
       'intentos': self.intentos
     }
 
+  def reset_actions(self):
+    self.acciones = {}
+
   def lanzar(self, dados: int = 2):
     """Lanza los dados"""
-    self.soplable = [False, False, False, False]
+    self.color_soplable = False
 
     if dados == 2:
       self.dado2 = random.randint(1, 6)
@@ -74,6 +78,7 @@ class Turno():
       self.pares = None
 
   def siguiente_turno(self, color: str):
+    self.color_soplable = self.color
     self.color = color
     self.dado1 = None
     self.dado2 = None
