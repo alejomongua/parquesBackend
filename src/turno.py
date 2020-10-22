@@ -55,9 +55,6 @@ class Turno():
       'intentos': self.intentos
     }
 
-  def reset_actions(self):
-    self.acciones = {}
-
   def lanzar(self, dados: int = 2):
     """Lanza los dados"""
     self.color_soplable = False
@@ -68,6 +65,11 @@ class Turno():
       self.dado2 = 0
 
     self.dado1 = random.randint(1, 6)
+
+    self.acciones = {
+      'dado1': self.dado1,
+      'dado2': self.dado2,
+    }
 
     if self.dado1 == self.dado2:
       if self.pares is None:
