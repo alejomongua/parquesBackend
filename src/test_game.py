@@ -904,7 +904,7 @@ class GameTest(unittest.TestCase):
 
     # Ponga la ultima ficha a tres de ganar
     ficha = game.jugadores[0].fichas[3]
-    ficha.recta_final = 4
+    ficha.recta_final = True
     ficha.posicion = 5 # gana cuando llega al 8
 
     # Lance y acomode los dados
@@ -917,6 +917,28 @@ class GameTest(unittest.TestCase):
     # Verifique que el jugador 1 haya ganado
     self.assertTrue(game.jugadores[0].finalizado)
 
+  def test_lanza_un_solo_dado_cuando_solo_tiene_una_ficha_a_menos_de_seis(self):
+    # Por ejemplo: Cuando solo le queda una ficha y saca más del valor que necesita
+    game = iniciar_juego(4)
+
+    sacar_de_la_carcel(game)
+
+    # Corone todas las fichas del jugador 1 salvo 1
+    for contador in range(3):
+      ficha = game.jugadores[0].fichas[contador]
+      ficha.coronada = True
+
+    # Ponga la ultima ficha a seis de ganar
+    ficha = game.jugadores[0].fichas[3]
+    ficha.recta_final = True
+    ficha.posicion = 2 # gana cuando llega al 8
+
+    # Lance y acomode los dados
+    game.lanzar(game.jugadores[0].key)
+
+    # Verifique que es el turno del siguiente jugador
+    self.assertEqual(game.turno.dado2, 0)
+
   def test_continuar_con_el_siguiente_turno_si_no_puede_mover(self):
     # Por ejemplo: Cuando solo le queda una ficha y saca más del valor que necesita
     game = iniciar_juego(4)
@@ -928,17 +950,17 @@ class GameTest(unittest.TestCase):
       ficha = game.jugadores[0].fichas[contador]
       ficha.coronada = True
 
-    # Ponga la ultima ficha a tres de ganar
+    # Ponga la ultima ficha a uno de ganar
     ficha = game.jugadores[0].fichas[3]
-    ficha.recta_final = 4
-    ficha.posicion = 5 # gana cuando llega al 8
+    ficha.recta_final = True
+    ficha.posicion = 7 # gana cuando llega al 8
 
     # Lance y acomode los dados
     game.lanzar(game.jugadores[0].key)
-    game.turno.dado1 = 4
 
     # Verifique que es el turno del siguiente jugador
-    self.assertEqual(game.jugadores[1].color, game.turno.color)
+    if game.turno.dado1 > 1:
+      self.assertEqual(game.jugadores[1].color, game.turno.color)
 
   def test_no_puede_soplar_despues_de_que_el_siguiente_lance(self):
     game = iniciar_juego(4)
