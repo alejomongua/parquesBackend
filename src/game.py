@@ -160,22 +160,22 @@ class Game():
             self.fichas_en_casillas = {}
 
             # Itera sobre cada ficha de cada jugador
-            for jugador in self.jugadores:
+            for jugador1 in self.jugadores:
                 # Excluye las fichas del jugador actual
-                if jugador.color == self.turno.color:
+                if jugador1.color == self.turno.color:
                     continue
 
                 for ficha in range(4):
-                    ficha1 = jugador.fichas[ficha]
+                    ficha1 = jugador1.fichas[ficha]
                     # que no esté ni coronada ni encarcelada ni en la recta final
                     if any([ficha1.encarcelada, ficha1.coronada, ficha1.recta_final]):
                         continue
 
                     # Crea una lista de listas por cada casilla ocupada
                     if not ficha1.posicion in self.fichas_en_casillas:
-                        self.fichas_en_casillas[ficha1.posicion] = [[jugador.color, ficha]]
+                        self.fichas_en_casillas[ficha1.posicion] = [[jugador1.color, ficha]]
                     else:
-                        self.fichas_en_casillas[ficha1.posicion].append([jugador.color, ficha])
+                        self.fichas_en_casillas[ficha1.posicion].append([jugador1.color, ficha])
 
             # Almacene la posición actual de las fichas del jugador actual, esto
             # con el fin de saber si cuando se sople es o no procedente
@@ -187,7 +187,8 @@ class Game():
             for ficha in jugador.fichas:
                 locked = ficha.encarcelada or ficha.coronada
                 if not locked and ficha.recta_final:
-                    if self.turno.dado1 > 8 - ficha.posicion and (self.turno.dado2 == 0 or self.turno.dado2 > 8 - ficha.posicion):
+                    pasos_restantes = 8 - ficha.posicion
+                    if self.turno.dado1 > pasos_restantes and (self.turno.dado2 == 0 or self.turno.dado2 > pasos_restantes):
                         locked = True
                 if not locked:
                     todas_bloqueadas = False
@@ -263,11 +264,13 @@ class Game():
 
             if esta_ficha.posicion == 8:
                 esta_ficha.coronada = True
+                jugador.finalizado = all([ficha.coronada for ficha in jugador.fichas])
+
 
         else:
             # Si no esta en la recta final
             posicion_actual = esta_ficha.posicion
-            llegada = (jugador.salida + self.tablero.posiciones * 17 - 5) % self.tablero.posiciones * 17
+            llegada = (jugador.salida + self.tablero.posiciones * 17 - 5) % (self.tablero.posiciones * 17)
 
             for movimiento in range(cantidad):
                 pasos_restantes = cantidad - movimiento - 1
@@ -286,9 +289,10 @@ class Game():
 
                         if esta_ficha.posicion == 8:
                             esta_ficha.coronada = True
+                            jugador.finalizado = all([ficha.coronada for ficha in jugador.fichas])
 
                 else:
-                    esta_ficha.posicion = (posicion_actual + movimiento + 1) % self.tablero.posiciones * 17
+                    esta_ficha.posicion = (posicion_actual + movimiento + 1) % (self.tablero.posiciones * 17)
 
         # Revise si metió alguna ficha a la carcel
         comio = not self.tablero.seguro(esta_ficha.posicion) and \
@@ -404,6 +408,20 @@ class Game():
             self.turno.dado2 = 0
         else:
             self.turno.siguiente_turno(self.turno.color)
+
+        # Meta a la carcel las fichas que estaban en la salida
+        if jugador.salida in self.fichas_en_casillas:
+            for color_ficha in self.fichas_en_casillas[jugador.salida]:
+                color = color_ficha[0]
+                # Encuentre el jugador por el color
+                for otro_jugador in self.jugadores:
+                    if otro_jugador.color == color:
+                        otra_ficha = otro_jugador.fichas[color_ficha[1]]
+                        # Lleve la ficha a la carcel
+                        otra_ficha.encarcelada = True
+                        otra_ficha.posicion = otro_jugador.salida
+                        break
+
         self.turno.pares = 0
 
         self.turno.acciones['sacar_de_la_carcel'] = True
@@ -427,6 +445,8 @@ class Game():
             }
 
         jugador.fichas[ficha].coronada = True
+        jugador.finalizado = all([ficha.coronada for ficha in jugador.fichas])
+
         self.siguiente_turno()
 
         self.turno.acciones['coronar'] = True

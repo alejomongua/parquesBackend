@@ -76,7 +76,7 @@ class GameTest(unittest.TestCase):
 
     resultado = game.dump_object()
     self.assertEqual(resultado['id'], game.id)
-    self.assertIsInstance(resultado['tablero'], Tablero)
+    self.assertIsInstance(resultado['tablero'], dict)
     self.assertIsInstance(resultado['jugadores'], list)
     self.assertEqual(len(resultado['jugadores']), 0)
 
@@ -402,7 +402,10 @@ class GameTest(unittest.TestCase):
     game.turno.dado2 = 4
 
     # Meta a la carcel la ficha del jugador 2
-    game.mover(game.jugadores[0].key, 0, 5)
+    resultado = game.mover(game.jugadores[0].key, 0, 5)
+
+    with self.assertRaises(KeyError):
+      resultado['error']
 
     # Verifique que queda encarcelada
     self.assertTrue(game.jugadores[2].fichas[0].encarcelada)
@@ -619,7 +622,7 @@ class GameTest(unittest.TestCase):
     # Verifique que la ficha vaya a la carcel
     self.assertTrue(game.jugadores[0].fichas[0].encarcelada)
 
-  def test_cuando_no_saca_de_la_carcel(self):
+  def test_soplar_cuando_no_saca_de_la_carcel(self):
     game = iniciar_juego(4)
 
     sacar_de_la_carcel(game, 2)
@@ -902,17 +905,20 @@ class GameTest(unittest.TestCase):
       ficha = game.jugadores[0].fichas[contador]
       ficha.coronada = True
 
-    # Ponga la ultima ficha a tres de ganar
+    # Ponga la ultima ficha a seis de ganar
     ficha = game.jugadores[0].fichas[3]
     ficha.recta_final = True
-    ficha.posicion = 5 # gana cuando llega al 8
+    ficha.posicion = 2 # gana cuando llega al 8
 
     # Lance y acomode los dados
     game.lanzar(game.jugadores[0].key)
-    game.turno.dado1 = 3
+    game.turno.dado1 = 6
 
     # Corone la ficha
-    game.mover(game.jugadores[0].key, 3, 3)
+    resultado = game.mover(game.jugadores[0].key, 3, 6)
+
+    with self.assertRaises(KeyError):
+      resultado['error']
 
     # Verifique que el jugador 1 haya ganado
     self.assertTrue(game.jugadores[0].finalizado)
@@ -959,8 +965,11 @@ class GameTest(unittest.TestCase):
     game.lanzar(game.jugadores[0].key)
 
     # Verifique que es el turno del siguiente jugador
-    if game.turno.dado1 > 1:
+    if game.turno.dado1 is None:
       self.assertEqual(game.jugadores[1].color, game.turno.color)
+    else:
+      # Si no, es porque saco uno
+      self.assertEqual(game.turno.dado1, 1)
 
   def test_no_puede_soplar_despues_de_que_el_siguiente_lance(self):
     game = iniciar_juego(4)
