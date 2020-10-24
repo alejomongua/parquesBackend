@@ -28,7 +28,7 @@ class Game():
         self.id = None
         self.turno = None
         self.tablero = None
-    
+
     def dump_object(self):
         """Retorna el estado actual del objeto"""
         return {
@@ -37,6 +37,7 @@ class Game():
             'jugadores': [jugador.dump_object() for jugador in self.jugadores],
             'finalizado': self.finalizado,
             'inicio': self.created_at,
+            'turno': self.turno.dump_object(),
             'ultimo_turno': self.last_turn
         }
 
@@ -122,7 +123,6 @@ class Game():
     def lanzar(self, player_key: str):
         """Realiza un lanzamiento de dados"""
         jugador = self.encontrar_jugador(player_key)
-        siguiente_turno = False
 
         if jugador is None:
             return {
@@ -136,70 +136,53 @@ class Game():
                 'mensaje': 'Espere su turno'
             }
 
-        if all([ficha.encarcelada for ficha in jugador.fichas if not ficha.coronada]):
-            self.turno.lanzar(2)
+        if self.turno.lanzado:
+            return {
+                'error': True,
+                'mensaje': 'No es momento de lanzar los dados'
+            }
 
-            self.turno.intentos -= 1
+        self.turno.lanzar(jugador.cantidad_dados())
 
-            siguiente_turno = self.turno.intentos == 0 and self.turno.dado1 != self.turno.dado2
-        else:
-            if self.turno.dado1 is not None:
-                return {
-                    'error': True,
-                    'mensaje': 'No es momento de lanzar los dados'
-                }
+        # Verifica las fichas en las casillas: Itera sobre cada ficha de cada
+        # jugador que no esté encarcelada ni coronada ni en la carcel para
+        # crear un diccionario con las fichas que hay en cada casilla del
+        # tablero
 
-            self.turno.lanzar(jugador.cantidad_dados())
+        # primero inicializa todo
+        self.fichas_en_casillas = {}
 
-            # Verifica las fichas en las casillas: Itera sobre cada ficha de cada
-            # jugador que no esté encarcelada ni coronada ni en la carcel para
-            # crear un diccionario con las fichas que hay en cada casilla del
-            # tablero
+        # Itera sobre cada ficha de cada jugador
+        for jugador1 in self.jugadores:
+            # Excluye las fichas del jugador actual
+            if jugador1.color == self.turno.color:
+                continue
 
-            # primero inicializa todo
-            self.fichas_en_casillas = {}
-
-            # Itera sobre cada ficha de cada jugador
-            for jugador1 in self.jugadores:
-                # Excluye las fichas del jugador actual
-                if jugador1.color == self.turno.color:
+            for ficha in range(4):
+                ficha1 = jugador1.fichas[ficha]
+                # que no esté ni coronada ni encarcelada ni en la recta final
+                if any([ficha1.encarcelada, ficha1.coronada, ficha1.recta_final]):
                     continue
 
-                for ficha in range(4):
-                    ficha1 = jugador1.fichas[ficha]
-                    # que no esté ni coronada ni encarcelada ni en la recta final
-                    if any([ficha1.encarcelada, ficha1.coronada, ficha1.recta_final]):
-                        continue
-
-                    # Crea una lista de listas por cada casilla ocupada
-                    if not ficha1.posicion in self.fichas_en_casillas:
-                        self.fichas_en_casillas[ficha1.posicion] = [[jugador1.color, ficha]]
-                    else:
-                        self.fichas_en_casillas[ficha1.posicion].append([jugador1.color, ficha])
-
-            # Almacene la posición actual de las fichas del jugador actual, esto
-            # con el fin de saber si cuando se sople es o no procedente
-            self.turno.acciones['posiciones'] = [ficha.posicion for ficha in jugador.fichas]
-
-            # Verifique cuales fichas no se pueden mover
-            self.turno.locked = []
-            todas_bloqueadas = True
-            for ficha in jugador.fichas:
-                locked = ficha.encarcelada or ficha.coronada
-                if not locked and ficha.recta_final:
-                    pasos_restantes = 8 - ficha.posicion
-                    if self.turno.dado1 > pasos_restantes and (self.turno.dado2 == 0 or self.turno.dado2 > pasos_restantes):
-                        locked = True
-                if not locked:
-                    todas_bloqueadas = False
-                self.turno.locked.append(locked)
-
-            # Si todas las fichas están bloqueadas, es el turno del siguiente jugador
-            if todas_bloqueadas:
-                if self.turno.pares is None:
-                    self.siguiente_turno()
+                # Crea una lista de listas por cada casilla ocupada
+                if not ficha1.posicion in self.fichas_en_casillas:
+                    self.fichas_en_casillas[ficha1.posicion] = [[jugador1.color, ficha]]
                 else:
-                    self.turno.siguiente_turno(self.turno.color)
+                    self.fichas_en_casillas[ficha1.posicion].append([jugador1.color, ficha])
+
+        # Almacene la posición actual de las fichas del jugador actual, esto
+        # con el fin de saber si cuando se sople es o no procedente
+        self.turno.acciones['posiciones'] = [ficha.posicion for ficha in jugador.fichas]
+
+        # Verifique cuales fichas no se pueden mover
+        self.turno.locked = []
+        for ficha in jugador.fichas:
+            locked = ficha.encarcelada or ficha.coronada
+            if not locked and ficha.recta_final:
+                pasos_restantes = 8 - ficha.posicion
+                if self.turno.dado1 > pasos_restantes and (self.turno.dado2 == 0 or self.turno.dado2 > pasos_restantes):
+                    locked = True
+            self.turno.locked.append(locked)
 
         # Incremente el contador de pares si aplica
         if self.turno.dado1 == self.turno.dado2:
@@ -210,9 +193,9 @@ class Game():
         else:
             self.turno.pares = None
 
-        if siguiente_turno:
+        # Si todas las fichas están bloqueadas, es el turno del siguiente jugador
+        if all(self.turno.locked):
             self.siguiente_turno()
-
         return self.almacenar()
 
     def mover(self, player_key: str, ficha: int, cantidad: int):
@@ -235,7 +218,7 @@ class Game():
                 'error': True,
                 'mensaje': 'Espere su turno'
             }
-        
+
         if self.turno.dado1 is None or self.turno.dado2 is None:
             return {
                 'error': True,
@@ -321,7 +304,7 @@ class Game():
                         break
 
             # En esta casilla solo deja este color en el mapa, para que si pone otra
-            # ficha ahí mismo no cuente como si hubiera comido      
+            # ficha ahí mismo no cuente como si hubiera comido
             self.fichas_en_casillas[esta_ficha.posicion] = [[jugador.color, ficha]]
 
         # Determine cuantos dados usó
@@ -367,7 +350,7 @@ class Game():
                 'error': True,
                 'mensaje': 'Espere su turno'
             }
-        
+
         if self.turno.dado1 is None or self.turno.dado2 is None:
             return {
                 'error': True,
@@ -573,11 +556,16 @@ class Game():
 
     def siguiente_turno(self, color: str = None):
         """Hace el setup para el siguiente turno"""
-        indice_actual = [jugador.color for jugador in self.jugadores].index(self.turno.color)
-        siguiente_jugador = self.jugadores[(indice_actual + 1) % len(self.jugadores)]
-        self.turno.siguiente_turno(siguiente_jugador.color)
-        self.turno.pares = None
-        self.turno.intentos = siguiente_jugador.cantidad_lanzamientos()
+        if self.turno.pares is None and self.turno.intentos == 0:
+            indice_actual = [jugador.color for jugador in self.jugadores].index(self.turno.color)
+            siguiente_jugador = self.jugadores[(indice_actual + 1) % len(self.jugadores)]
+            self.turno.siguiente_turno(siguiente_jugador.color)
+            self.turno.pares = None
+            self.turno.intentos = siguiente_jugador.cantidad_lanzamientos()
+        else:
+            self.turno.siguiente_turno()
+            if self.turno.intentos > 0 and not self.turno.pares:
+                self.turno.intentos -= 1
 
     @classmethod
     def retrieve_from_database(cls, id: str):

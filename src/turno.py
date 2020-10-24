@@ -39,6 +39,7 @@ class Turno():
     self.dado1 = None
     self.dado2 = None
     self.pares = None
+    self.lanzado = False
     self.locked = [False, False, False, False]
     self.color_soplable = None
     self.intentos = 3
@@ -52,12 +53,15 @@ class Turno():
       'dado1': self.dado1,
       'dado2': self.dado2,
       'pares': self.pares,
+      'lanzado': self.lanzado,
       'intentos': self.intentos
     }
 
   def lanzar(self, dados: int = 2):
     """Lanza los dados"""
     self.color_soplable = False
+    self.lanzado = True
+    self.intentos -= 1
 
     if dados == 2:
       self.dado2 = random.randint(1, 6)
@@ -79,9 +83,9 @@ class Turno():
     else:
       self.pares = None
 
-  def siguiente_turno(self, color: str):
-    self.color_soplable = self.color
-    self.color = color
-    self.dado1 = None
-    self.dado2 = None
+  def siguiente_turno(self, color: str = None):
+    if color is not None:
+      self.color_soplable = self.color
+      self.color = color
+    self.lanzado = False
     self.locked = [False, False, False, False]

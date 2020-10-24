@@ -161,6 +161,7 @@ class GameTest(unittest.TestCase):
     self.assertTrue(game.iniciado)
     self.assertIsNotNone(game.started_at)
     self.assertIsNotNone(game.turno.color)
+    self.assertFalse(game.turno.lanzado)
 
     # No deja unirse a un juego iniciado
     color = list(constants.COLORES.keys())[2]
@@ -222,7 +223,6 @@ class GameTest(unittest.TestCase):
           break
       # El jugador que corresponda lance los dados
       resultado = game.lanzar(jugador_actual.key)
-      print(resultado)
 
       dado1 = game.turno.dado1
       dado2 = game.turno.dado2
@@ -230,7 +230,6 @@ class GameTest(unittest.TestCase):
       if dado1 == dado2:
         # Saque las fichas de la carcel
         resultado = game.sacar_de_la_carcel(jugador_actual.key)
-        print(resultado)
 
         # Si es par de unos o par de seises
         if dado1 == 1 or dado1 == 6:
@@ -323,11 +322,13 @@ class GameTest(unittest.TestCase):
     if dado1 == dado2:
       siguiente_jugador = game.jugadores[0]
 
-    game.lanzar(siguiente_jugador.key)
+    resultado = game.lanzar(siguiente_jugador.key)
 
     # Mueva la suma de ambos dados
-    suma = game.turno.dado1 + game.turno.dado2
+    suma = dado1 + dado2
+    print(resultado)
     resultado = game.mover(siguiente_jugador.key, 2, suma)
+    print(resultado)
     with self.assertRaises(KeyError):
       resultado['error']
     self.assertEqual(siguiente_jugador.fichas[2].posicion, siguiente_jugador.salida + suma)
@@ -493,9 +494,6 @@ class GameTest(unittest.TestCase):
 
   def test_meter_a_la_carcel_en_salida(self):
     game = iniciar_juego(4)
-
-    # Esto es muy dificil de testear, me toca revisar bien como lo voy a testear
-    return
 
     # Repita los turnos hasta que saque pares
     while True:
@@ -850,8 +848,7 @@ class GameTest(unittest.TestCase):
     # Lance y acomode los dados
     game.lanzar(game.jugadores[0].key)
     while game.turno.dado1 != 3 and game.turno.dado2 != 3 and game.turno.dado1 + game.turno.dado2 != 3:
-      game.turno.dado1 = None
-      game.turno.dado2 = None
+      game.turno.lanzado = False
       game.lanzar(game.jugadores[0].key)
 
     # Corone la ficha
@@ -973,12 +970,13 @@ class GameTest(unittest.TestCase):
     ficha = game.jugadores[0].fichas[3]
     ficha.recta_final = True
     ficha.posicion = 7 # gana cuando llega al 8
+    game.turno.intentos = 1
 
-    # Lance y acomode los dados
-    game.lanzar(game.jugadores[0].key)
+    # Lance y verifique el lanzamiento
+    resultado = game.lanzar(game.jugadores[0].key)
 
     # Verifique que es el turno del siguiente jugador
-    if game.turno.dado1 is None:
+    if not game.turno.lanzado:
       self.assertEqual(game.jugadores[1].color, game.turno.color)
     else:
       # Si no, es porque saco uno
