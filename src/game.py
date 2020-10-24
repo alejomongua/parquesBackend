@@ -122,6 +122,7 @@ class Game():
     def lanzar(self, player_key: str):
         """Realiza un lanzamiento de dados"""
         jugador = self.encontrar_jugador(player_key)
+        siguiente_turno = False
 
         if jugador is None:
             return {
@@ -140,8 +141,7 @@ class Game():
 
             self.turno.intentos -= 1
 
-            if self.turno.intentos == 0 and self.turno.dado1 != self.turno.dado2:
-                self.siguiente_turno()
+            siguiente_turno = self.turno.intentos == 0 and self.turno.dado1 != self.turno.dado2
         else:
             if self.turno.dado1 is not None:
                 return {
@@ -209,6 +209,9 @@ class Game():
                 self.turno.pares += 1
         else:
             self.turno.pares = None
+
+        if siguiente_turno:
+            self.siguiente_turno()
 
         return self.almacenar()
 
@@ -410,20 +413,17 @@ class Game():
             self.turno.siguiente_turno(self.turno.color)
 
         # Meta a la carcel las fichas que estaban en la salida
-
-        # Itera sobre cada ficha de cada jugador
-        for jugador1 in self.jugadores:
-            # Excluye las fichas del jugador actual
-            if jugador1.color == self.turno.color:
-                continue
-
-            for ficha in range(4):
-                ficha1 = jugador1.fichas[ficha]
-                # que no esté ni coronada ni encarcelada ni en la recta final
-                # Crea una lista de listas por cada casilla ocupada
-                if not ficha1.posicion == jugador.salida:
-                    ficha1.posicion = jugador1.salida
-                    ficha1.encarcelada = True
+        if jugador.salida in self.fichas_en_casillas:
+            for color_ficha in self.fichas_en_casillas[jugador.salida]:
+                color = color_ficha[0]
+                # Encuentre el jugador por el color
+                for otro_jugador in self.jugadores:
+                    if otro_jugador.color == color:
+                        otra_ficha = otro_jugador.fichas[color_ficha[1]]
+                        # Lleve la ficha a la carcel
+                        otra_ficha.encarcelada = True
+                        otra_ficha.posicion = otro_jugador.salida
+                        break
 
         self.turno.pares = 0
 
@@ -587,7 +587,7 @@ class Game():
 
     @classmethod
     def create(cls, posiciones: int = 4, publico: bool = False):
-        if posiciones >= 4 or posiciones <= 8:
+        if posiciones >= 4 and posiciones <= 8:
             game = cls(publico)
             game.id = str(uuid.uuid4())
             game.turno = Turno()
