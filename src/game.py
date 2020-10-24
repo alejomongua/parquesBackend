@@ -319,7 +319,7 @@ class Game():
 
             # En esta casilla solo deja este color en el mapa, para que si pone otra
             # ficha ahí mismo no cuente como si hubiera comido      
-            self.fichas_en_casillas[esta_ficha.posicion] = [jugador.color, ficha]
+            self.fichas_en_casillas[esta_ficha.posicion] = [[jugador.color, ficha]]
 
         # Determine cuantos dados usó
         if cantidad == self.turno.dado1:
@@ -410,17 +410,20 @@ class Game():
             self.turno.siguiente_turno(self.turno.color)
 
         # Meta a la carcel las fichas que estaban en la salida
-        if jugador.salida in self.fichas_en_casillas:
-            for color_ficha in self.fichas_en_casillas[jugador.salida]:
-                color = color_ficha[0]
-                # Encuentre el jugador por el color
-                for otro_jugador in self.jugadores:
-                    if otro_jugador.color == color:
-                        otra_ficha = otro_jugador.fichas[color_ficha[1]]
-                        # Lleve la ficha a la carcel
-                        otra_ficha.encarcelada = True
-                        otra_ficha.posicion = otro_jugador.salida
-                        break
+
+        # Itera sobre cada ficha de cada jugador
+        for jugador1 in self.jugadores:
+            # Excluye las fichas del jugador actual
+            if jugador1.color == self.turno.color:
+                continue
+
+            for ficha in range(4):
+                ficha1 = jugador1.fichas[ficha]
+                # que no esté ni coronada ni encarcelada ni en la recta final
+                # Crea una lista de listas por cada casilla ocupada
+                if not ficha1.posicion == jugador.salida:
+                    ficha1.posicion = jugador1.salida
+                    ficha1.encarcelada = True
 
         self.turno.pares = 0
 

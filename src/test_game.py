@@ -1,4 +1,5 @@
 import unittest
+import random
 from game import Game
 from tablero import Tablero
 from turno import Turno
@@ -23,6 +24,8 @@ def sacar_de_la_carcel(game: Game, cantidad: int = 4):
     for contador in range(cantidad):
       ficha = jugador.fichas[contador]
       ficha.encarcelada = False
+
+random.seed(11111111)
 
 class GameTest(unittest.TestCase):
 
@@ -839,7 +842,10 @@ class GameTest(unittest.TestCase):
 
     # Lance y acomode los dados
     game.lanzar(game.jugadores[0].key)
-    game.turno.dado1 = 3
+    while game.turno.dado1 != 3 and game.turno.dado2 != 3 and game.turno.dado1 + game.turno.dado2 != 3:
+      game.turno.dado1 = None
+      game.turno.dado2 = None
+      game.lanzar(game.jugadores[0].key)
 
     # Corone la ficha
     game.mover(game.jugadores[0].key, 0, 3)
@@ -986,7 +992,11 @@ class GameTest(unittest.TestCase):
     # Mueva la ficha sin comerse la que podia comerse
     game.mover(game.jugadores[0].key, 0, 4 + game.turno.dado2)
 
-    game.lanzar(game.jugadores[1].key)
+    # Que el siguiente jugador lance (si saca pares, el siguiente jugador es el mismo)
+    if game.turno.pares:
+      game.lanzar(game.jugadores[0].key)
+    else:
+      game.lanzar(game.jugadores[1].key)
 
     # Sople la ficha que no comio, pero después de que ya lanzó el siguiente
     resultado = game.soplar(game.jugadores[3].key, 0)
@@ -996,6 +1006,44 @@ class GameTest(unittest.TestCase):
 
     # Verifique que la ficha no vaya a la carcel
     self.assertFalse(game.jugadores[0].fichas[0].encarcelada)
+
+  def test_todas_las_fichas_bloqueadas(self):
+    game = iniciar_juego(4)
+
+    sacar_de_la_carcel(game)
+
+    # Corone dos fichas del primer jugador
+    game.jugadores[0].fichas[0].coronada = True
+    game.jugadores[0].fichas[1].coronada = True
+
+    # Las demás fichas quedan en la recta final
+    game.jugadores[0].fichas[2].recta_final = True
+    game.jugadores[0].fichas[3].recta_final = True
+
+    # Una ficha queda a 6 de coronar
+    game.jugadores[0].fichas[2].posicion = 2
+
+    # La otra ficha queda a uno de coronar
+    game.jugadores[0].fichas[3].posicion = 7
+
+    # Lance los dados
+    game.lanzar(game.jugadores[0])
+
+    # Vuelva a intentar hasta que saque uno en algún dado pero que no sea par de unos
+    while game.turno.dado1 == 1 or game.turno.dado2 == 1 and (game.turno.dado1 != game.turno.dado2):
+      game.turno.dado1 = None
+      game.turno.dado2 = None
+      game.turno.pares = None
+      game.lanzar(game.jugadores[0])
+
+    # Mueva uno con la ficha más atrasada
+    game.mover(game.jugadores[0].key, 2, 1)
+
+    # Debería ser ahora el turno del segundo jugador, porque no puede
+    # mover lo del otro dado con la otra ficha
+    self.assertFalse(game.turno.color == game.jugadores[0].color)
+    self.assertIsNone(game.turno.dado1)
+    self.assertIsNone(game.turno.dado2)
 
 if __name__ == '__main__':
     unittest.main()
