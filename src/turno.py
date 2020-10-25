@@ -84,8 +84,8 @@ class Turno():
       self.pares = None
 
   def siguiente_turno(self, color: str = None):
-    if color is not None:
-      self.color_soplable = self.color
-      self.color = color
+    self.color_soplable = self.color
     self.lanzado = False
     self.locked = [False, False, False, False]
+    if color is not None:
+      self.color = color
