@@ -79,10 +79,10 @@ class GameTest(unittest.TestCase):
         # Verifique que sea público
         self.assertEqual(game.publico, True)
 
-    def test_dump_object(self):
+    def test_public_state(self):
         game = Game.create(4, False)
 
-        resultado = game.dump_object()
+        resultado = game.public_state()
         self.assertEqual(resultado['id'], game.id)
         self.assertIsInstance(resultado['tablero'], dict)
         self.assertIsInstance(resultado['jugadores'], list)
@@ -95,7 +95,7 @@ class GameTest(unittest.TestCase):
 
         # to do
         # Pendiente implementar la funcionalidad para que este test pase
-        # self.assertEqual(game1.dump_object(), game2.dump_object())
+        # self.assertEqual(game1.public_state(), game2.public_state())
 
     def test_join_game(self):
         game = Game.create(4, False)
@@ -988,7 +988,7 @@ class GameTest(unittest.TestCase):
         game.turno.intentos = 1
 
         # Lance y verifique el lanzamiento
-        resultado = game.lanzar(game.jugadores[0].key)
+        game.lanzar(game.jugadores[0].key)
 
         # Verifique que es el turno del siguiente jugador
         if not game.turno.lanzado:

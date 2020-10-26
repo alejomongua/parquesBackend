@@ -1,6 +1,7 @@
 import time
 import uuid
 import random
+import json
 
 # import my_firebase
 from tablero import Tablero
@@ -29,15 +30,17 @@ class Game():
         self.turno = None
         self.tablero = None
 
-    def dump_object(self):
-        """Retorna el estado actual del objeto"""
+    def public_state(self):
+        """
+        Retorna el estado actual del objeto que se puede mostrar públicamente
+        """
         return {
             'id': self.id,
-            'tablero': self.tablero.dump_object(),
-            'jugadores': [jugador.dump_object() for jugador in self.jugadores],
+            'tablero': self.tablero.public_state(),
+            'jugadores': [jugador.public_state() for jugador in self.jugadores],
             'finalizado': self.finalizado,
             'inicio': self.created_at,
-            'turno': self.turno.dump_object(),
+            'turno': self.turno.public_state(),
             'ultimo_turno': self.last_turn
         }
 
@@ -556,7 +559,7 @@ class Game():
 
         # To do
 
-        return self.dump_object()
+        return self.public_state()
 
     def encontrar_jugador(self, key: str):
         """Encuentra un jugador por su llave"""
@@ -579,6 +582,41 @@ class Game():
             self.turno.siguiente_turno()
             if self.turno.intentos > 0 and not self.turno.pares:
                 self.turno.intentos -= 1
+
+    def serializar(self):
+        """
+        Esta función sirve para convertir el juego en un diccionario para
+        para poder serializarlo y así almacenarlo en una base de datos
+        """
+        return {
+            'publico': self.publico,
+            'iniciado': self.iniciado,
+            'finalizado': self.finalizado,
+            'created_at': self.created_at,
+            'started_at': self.started_at,
+            'last_turn': self.last_turn,
+            'jugadores': [jugador.serializar() for jugador in self.jugadores],
+            'fichas_en_casillas': self.fichas_en_casillas,
+            'id': self.id,
+            'turno': self.turno.serializar(),
+            'tablero': self.tablero.serializar(),
+        }
+
+    @classmethod
+    def deserializar(cls, estado: dict):
+        """Reconstruye el estado del objeto desde un diccionario"""
+        game = cls(estado['publico'])
+        game.iniciado = estado['iniciado']
+        game.finalizado = estado['finalizado']
+        game.created_at = estado['created_at']
+        game.started_at = estado['started_at']
+        game.last_turn = estado['last_turn']
+        game.fichas_en_casillas = estado['fichas_en_casillas']
+        game.id = estado['id']
+        game.turno = Turno.deserializar(estado['turno'])
+        game.tablero = Tablero.deserializar(estado['tablero'])
+        game.jugadores = [Jugador.deserializar(jugador) for jugador in estado['jugadores']]
+        return game
 
     @classmethod
     def retrieve_from_database(cls, id: str):

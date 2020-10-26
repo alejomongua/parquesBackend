@@ -1,7 +1,7 @@
 class Tablero(object):
     colores = []
 
-    def __init__(self, posiciones:int, estado: dict=None):
+    def __init__(self, posiciones:int):
         self.posiciones = posiciones
         self.colores = [None] * posiciones
     
@@ -22,9 +22,17 @@ class Tablero(object):
                 break
         return
 
-
-    def dump_object(self):
+    def public_state(self):
         """Retorna el estado actual del objeto"""
         return {
             'colores': self.colores
         }
+
+    @classmethod
+    def deserializar(cls, estado: dict):
+        """Reconstruye el estado del objeto desde un diccionario"""
+        tablero = cls(len(estado['colores']))
+        tablero.colores = estado['colores']
+        return tablero
+
+    serializar = public_state
