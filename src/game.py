@@ -3,7 +3,7 @@ import uuid
 import random
 import json
 
-# import my_firebase
+import my_firebase
 from tablero import Tablero
 from jugador import Jugador
 from turno import Turno
@@ -557,7 +557,7 @@ class Game():
         """Almacena el estado del juego en la base de datos"""
         self.last_turn = time.time()
 
-        # To do
+        my_firebase.register_game(self)
 
         return self.public_state()
 
@@ -628,7 +628,6 @@ class Game():
     def create(cls, posiciones: int = 4, publico: bool = False):
         if posiciones >= 4 and posiciones <= 8:
             game = cls(publico)
-            game.id = str(uuid.uuid4())
             game.turno = Turno()
             game.tablero = Tablero(posiciones)
             game.almacenar()
