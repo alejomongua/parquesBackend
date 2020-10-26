@@ -1,11 +1,22 @@
 import unittest
+from unittest.mock import Mock
 import random
+import my_firebase
 from game import Game
 from tablero import Tablero
 from turno import Turno
 from jugador import Jugador
 import constants
 
+increment = 0
+def side_effect(game):
+    global increment
+    if game.id is None:
+        game.id = str(increment)
+        increment += 1
+    return game.public_state()
+
+my_firebase.register_game = Mock(side_effect=side_effect)
 
 def iniciar_juego(jugadores: int):
     # Instancie un juego

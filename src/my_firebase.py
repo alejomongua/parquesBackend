@@ -13,7 +13,7 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': constants.DATABASE_URL
 })
 
-ref = db.reference('server/saving-data/fireblog')
+ref = db.reference('server')
 
 games = ref.child('games')
 
