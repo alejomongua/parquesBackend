@@ -16,6 +16,7 @@ firebase_admin.initialize_app(cred, {
 ref = db.reference('server')
 
 games = ref.child('games')
+public_games = ref.child('public')
 
 def register_game(game):
     """Guarda un juego en la base de datos"""
@@ -27,6 +28,15 @@ def register_game(game):
                 'id': new_game_game_ref.key
             })
             game.id = new_game_game_ref.key
+
+            # Si es un juego público, póngalo en el índice
+            if game.publico:
+                public_games.update({
+                    game.id: {
+                        'posiciones': len(game.tablero.jugadores),
+                        'created_at': game.created_at,
+                    }
+                })
         else:
             game_ref = games.child(game.id)
             game_ref.set(serialized)

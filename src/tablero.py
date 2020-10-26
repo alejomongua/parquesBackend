@@ -3,7 +3,7 @@ class Tablero(object):
 
     def __init__(self, posiciones:int):
         self.posiciones = posiciones
-        self.colores = [None] * posiciones
+        self.colores = [False] * posiciones
     
     def cantidad_de_casillas(self):
         return 17 * self.posiciones
@@ -16,8 +16,8 @@ class Tablero(object):
 
     def add_color(self, color):
         for i in range(len(self.colores)):
-            if self.colores[i] == None:
-                self.colores.remove(None)
+            if not self.colores[i]:
+                self.colores.remove(False)
                 self.colores.append(color)
                 break
         return
