@@ -35,3 +35,7 @@ def register_game(game):
     except KeyError:
         # to do: catch real exeptions
         return False
+
+def get_game(id: str):
+    """Trae el juego desde la base de datos"""
+    return games.child(id).get()

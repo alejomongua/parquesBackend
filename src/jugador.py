@@ -51,9 +51,9 @@ class Jugador(object):
         """Reconstruye el estado del objeto desde un diccionario"""
         jugador = cls(estado['nickname'], estado['color'])
         jugador.fichas = [Ficha.deserializar(ficha) for ficha in estado.get('fichas', [])]
-        jugador.retirado = estado['retirado']
-        jugador.finalizado = estado['finalizado']
-        jugador.salida = estado['salida']
-        jugador.key = estado['key']
+        jugador.retirado = estado.get('retirado')
+        jugador.finalizado = estado.get('finalizado')
+        jugador.salida = estado.get('salida')
+        jugador.key = estado.get('key')
         return jugador
 

@@ -31,8 +31,9 @@ class Tablero(object):
     @classmethod
     def deserializar(cls, estado: dict):
         """Reconstruye el estado del objeto desde un diccionario"""
-        tablero = cls(len(estado['colores']))
-        tablero.colores = estado['colores']
+        colores = estado.get('colores', [])
+        tablero = cls(len(colores))
+        tablero.colores = colores
         return tablero
 
     serializar = public_state

@@ -21,8 +21,8 @@ class Ficha(object):
     def deserializar(cls, estado: dict):
         """Reconstruye el estado del objeto desde un diccionario"""
         ficha = cls()
-        ficha.posicion = estado['posicion']
-        ficha.encarcelada = estado['encarcelada']
-        ficha.coronada = estado['coronada']
-        ficha.recta_final = estado['recta_final']
+        ficha.posicion = estado.get('posicion')
+        ficha.encarcelada = estado.get('encarcelada')
+        ficha.coronada = estado.get('coronada')
+        ficha.recta_final = estado.get('recta_final')
         return ficha

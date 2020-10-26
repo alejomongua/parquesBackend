@@ -606,23 +606,28 @@ class Game():
     def deserializar(cls, estado: dict):
         """Reconstruye el estado del objeto desde un diccionario"""
         game = cls(estado['publico'])
-        game.iniciado = estado['iniciado']
-        game.finalizado = estado['finalizado']
-        game.created_at = estado['created_at']
-        game.started_at = estado['started_at']
-        game.last_turn = estado['last_turn']
-        game.fichas_en_casillas = estado['fichas_en_casillas']
-        game.id = estado['id']
-        game.turno = Turno.deserializar(estado['turno'])
-        game.tablero = Tablero.deserializar(estado['tablero'])
-        game.jugadores = [Jugador.deserializar(jugador) for jugador in estado['jugadores']]
+        game.iniciado = estado.get('iniciado')
+        game.finalizado = estado.get('finalizado')
+        game.created_at = estado.get('created_at')
+        game.started_at = estado.get('started_at')
+        game.last_turn = estado.get('last_turn')
+        game.fichas_en_casillas = estado.get('fichas_en_casillas')
+        game.id = estado.get('id')
+        game.turno = Turno.deserializar(estado.get('turno'))
+        game.tablero = Tablero.deserializar(estado.get('tablero'))
+        game.jugadores = [Jugador.deserializar(jugador) for jugador in estado.get('jugadores', [])]
         return game
 
     @classmethod
     def retrieve_from_database(cls, id: str):
         """Trae una instancia de un juego desde la base de datos"""
 
-        # to do
+        game_data = my_firebase.get_game(id)
+        if game_data is None:
+            return None
+
+        game = cls(game_data['publico'])
+        return game.deserializar(game_data)
 
     @classmethod
     def create(cls, posiciones: int = 4, publico: bool = False):

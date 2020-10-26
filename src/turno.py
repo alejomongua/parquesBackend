@@ -103,13 +103,13 @@ class Turno():
     def deserializar(cls, estado: dict):
         """Reconstruye el estado del objeto desde un diccionario"""
         turno = cls()
-        turno.color = estado['color']
-        turno.dado1 = estado['dado1']
-        turno.dado2 = estado['dado2']
-        turno.pares = estado['pares']
-        turno.lanzado = estado['lanzado']
-        turno.acciones = estado['acciones']
-        turno.intentos = estado['intentos']
-        turno.locked = estado['locked']
-        turno.color_soplable = estado['color_soplable']
+        turno.color = estado.get('color')
+        turno.dado1 = estado.get('dado1')
+        turno.dado2 = estado.get('dado2')
+        turno.pares = estado.get('pares')
+        turno.lanzado = estado.get('lanzado')
+        turno.acciones = estado.get('acciones')
+        turno.intentos = estado.get('intentos')
+        turno.locked = estado.get('locked')
+        turno.color_soplable = estado.get('color_soplable')
         return turno
