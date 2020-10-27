@@ -28,15 +28,14 @@ def register_game(game):
                 'id': new_game_game_ref.key
             })
             game.id = new_game_game_ref.key
+            public_games.update({
+                game.id: {
+                    'posiciones': len(game.tablero.colores),
+                    'created_at': game.created_at,
+                    'jugadores': 0,
+                }
+            })
 
-            # Si es un juego público, póngalo en el índice
-            if game.publico:
-                public_games.update({
-                    game.id: {
-                        'posiciones': len(game.tablero.jugadores),
-                        'created_at': game.created_at,
-                    }
-                })
         else:
             game_ref = games.child(game.id)
             game_ref.set(serialized)
@@ -46,6 +45,19 @@ def register_game(game):
         # to do: catch real exeptions
         return False
 
+def public_registry_update(game):
+    """Actualiza los datos de una partida pública"""
+    public_games.child(game.id).update({
+        'jugadores': len(game.jugadores)
+    })
+
+def public_registry_delete(game):
+    """Elimina una partida pública cuando ya inicia"""
+    public_games.child(game.id).delete()
+
 def get_game(id: str):
     """Trae el juego desde la base de datos"""
     return games.child(id).get()
+
+def list_public():
+    return public_games.get()

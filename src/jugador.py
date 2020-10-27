@@ -49,7 +49,7 @@ class Jugador(object):
     @classmethod
     def deserializar(cls, estado: dict):
         """Reconstruye el estado del objeto desde un diccionario"""
-        jugador = cls(estado['nickname'], estado['color'])
+        jugador = cls(estado['color'], estado['nickname'])
         jugador.fichas = [Ficha.deserializar(ficha) for ficha in estado.get('fichas', [])]
         jugador.retirado = estado.get('retirado')
         jugador.finalizado = estado.get('finalizado')

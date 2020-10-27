@@ -75,6 +75,11 @@ class Game():
         jugador.key = str(uuid.uuid4())
         self.jugadores.append(jugador)
         self.tablero.add_color(color)
+
+        my_firebase.public_registry_update(self)
+
+        self.almacenar()
+
         return {
             'success': True,
             'key': jugador.key
@@ -121,6 +126,8 @@ class Game():
         self.started_at = time.time()
         self.iniciado = True
 
+        my_firebase.public_registry_delete(self)
+
         return self.almacenar()
 
     def lanzar(self, player_key: str):
@@ -136,7 +143,7 @@ class Game():
         if self.turno.color != jugador.color:
             return {
                 'error': True,
-                'mensaje': 'Espere su turno'
+                'mensaje': f'Espere su turno - jugador {jugador.color}'
             }
 
         if self.turno.lanzado:
@@ -616,7 +623,7 @@ class Game():
         game.created_at = estado.get('created_at')
         game.started_at = estado.get('started_at')
         game.last_turn = estado.get('last_turn')
-        game.fichas_en_casillas = estado.get('fichas_en_casillas')
+        game.fichas_en_casillas = estado.get('fichas_en_casillas', {})
         game.id = estado.get('id')
         game.turno = Turno.deserializar(estado.get('turno'))
         game.tablero = Tablero.deserializar(estado.get('tablero'))

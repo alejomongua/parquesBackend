@@ -31,7 +31,6 @@ def iniciar_juego(jugadores: int):
 
     return game
 
-
 def sacar_de_la_carcel(game: Game, cantidad: int = 4):
     for jugador in game.jugadores:
         for contador in range(cantidad):
