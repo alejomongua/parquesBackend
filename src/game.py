@@ -401,11 +401,14 @@ class Game():
                         break
 
         self.turno.dado2 = 0
+        unica_ficha = False
         if len(fichas_liberadas) == 1:
             # Si le quedan más fichas, la ficha que sacó queda bloqueada
             cantidad_no_coronadas = len([0 for ficha in jugador.fichas if not ficha.coronada])
             if cantidad_no_coronadas != 1:
                 self.turno.locked[fichas_liberadas[0]] = True
+            else:
+                unica_ficha = True
         else:
             self.siguiente_turno()
 
@@ -420,6 +423,8 @@ class Game():
                         # Lleve la ficha a la carcel
                         otra_ficha.encarcelada = True
                         otra_ficha.posicion = otro_jugador.salida
+                        if unica_ficha:
+                            self.siguiente_turno()
                         break
 
         self.turno.pares = 0
