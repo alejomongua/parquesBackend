@@ -1,6 +1,6 @@
 # coding: utf-8
 
-class Ficha(object):
+class Ficha():
     def __init__(self):
         self.encarcelada = True
         self.coronada = False
@@ -17,7 +17,7 @@ class Ficha(object):
             'recta_final': self.recta_final
         }
 
-    @classmethod 
+    @classmethod
     def deserializar(cls, estado: dict):
         """Reconstruye el estado del objeto desde un diccionario"""
         ficha = cls()

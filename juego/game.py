@@ -1,7 +1,8 @@
+"""Clase principal con la lógica del juego de parqués"""
+
 import time
 import uuid
 import random
-import json
 
 from juego import my_firebase
 from juego.tablero import Tablero
@@ -47,7 +48,8 @@ class Game():
     def join(self, color: str, nickname: str):
         """Se agrega un jugador a la partida"""
         if not color in constants.COLORES:
-            mensaje = f'El color no es válido, debe ser una de estas opciones: {list(constants.COLORES.keys())}'
+            mensaje = 'El color no es válido, debe ser una de estas opciones: ' \
+                      f'{list(constants.COLORES.keys())}'
             return {
                 'error': True,
                 'mensaje': mensaje
@@ -190,7 +192,8 @@ class Game():
             locked = ficha.encarcelada or ficha.coronada
             if not locked and ficha.recta_final:
                 pasos_restantes = 8 - ficha.posicion
-                if self.turno.dado1 > pasos_restantes and (self.turno.dado2 == 0 or self.turno.dado2 > pasos_restantes):
+                if self.turno.dado1 > pasos_restantes and \
+                   (self.turno.dado2 == 0 or self.turno.dado2 > pasos_restantes):
                     locked = True
             self.turno.locked.append(locked)
 
@@ -214,6 +217,11 @@ class Game():
         return self.almacenar()
 
     def mover(self, player_key: str, ficha: int, cantidad: int):
+        """
+        Función para mover una ficha una determinada cantidad,
+        tiene varias validaciones para asegurarse de que el movimiento
+        es legal
+        """
         jugador = self.encontrar_jugador(player_key)
 
         if jugador is None:
@@ -241,9 +249,8 @@ class Game():
             }
 
         esta_ficha = jugador.fichas[ficha]
-        cantidad_legal = cantidad == self.turno.dado1 or \
-                         cantidad == self.turno.dado2 or \
-                         cantidad == self.turno.dado1 + self.turno.dado2
+        cantidad_legal = cantidad in \
+                         (self.turno.dado1, self.turno.dado2, self.turno.dado1 + self.turno.dado2)
         if esta_ficha.encarcelada or esta_ficha.coronada or \
            not cantidad_legal or cantidad == 0 or self.turno.locked[ficha]:
             return {
@@ -271,7 +278,8 @@ class Game():
         else:
             # Si no esta en la recta final
             posicion_actual = esta_ficha.posicion
-            llegada = (jugador.salida + self.tablero.posiciones * 17 - 5) % (self.tablero.posiciones * 17)
+            llegada = (jugador.salida + self.tablero.posiciones * 17 - 5) % \
+                      (self.tablero.posiciones * 17)
 
             for movimiento in range(cantidad):
                 pasos_restantes = cantidad - movimiento - 1
@@ -284,21 +292,21 @@ class Game():
                             'mensaje': 'Movimiento ilegal'
                         }
 
-                    else:
-                        esta_ficha.recta_final = True
-                        esta_ficha.posicion += pasos_restantes
+                    esta_ficha.recta_final = True
+                    esta_ficha.posicion += pasos_restantes
 
-                        if esta_ficha.posicion == 8:
-                            esta_ficha.coronada = True
-                            jugador.finalizado = all([ficha.coronada for ficha in jugador.fichas])
+                    if esta_ficha.posicion == 8:
+                        esta_ficha.coronada = True
+                        jugador.finalizado = all([ficha.coronada for ficha in jugador.fichas])
 
                 else:
-                    esta_ficha.posicion = (posicion_actual + movimiento + 1) % (self.tablero.posiciones * 17)
+                    esta_ficha.posicion = (posicion_actual + movimiento + 1) % \
+                                          (self.tablero.posiciones * 17)
 
         # Revise si metió alguna ficha a la carcel
-        comio = not self.tablero.seguro(esta_ficha.posicion) and \
+        comio = not Tablero.seguro(esta_ficha.posicion) and \
                 not esta_ficha.recta_final and \
-                not self.tablero.salida(esta_ficha.posicion) and \
+                not Tablero.salida(esta_ficha.posicion) and \
                 esta_ficha.posicion in self.fichas_en_casillas
         ficha_que_se_comio = None
         if comio:
@@ -583,7 +591,7 @@ class Game():
         # Si no encuentra ninguno retorna None
         return None
 
-    def siguiente_turno(self, color: str = None):
+    def siguiente_turno(self):
         """Hace el setup para el siguiente turno"""
         if self.turno.pares is None and self.turno.intentos == 0:
             indice_actual = [jugador.color for jugador in self.jugadores].index(self.turno.color)
@@ -632,10 +640,10 @@ class Game():
         return game
 
     @classmethod
-    def retrieve_from_database(cls, id: str):
+    def retrieve_from_database(cls, game_id: str):
         """Trae una instancia de un juego desde la base de datos"""
 
-        game_data = my_firebase.get_game(id)
+        game_data = my_firebase.get_game(game_id)
         if game_data is None:
             return None
 
@@ -644,7 +652,8 @@ class Game():
 
     @classmethod
     def create(cls, posiciones: int = 4, publico: bool = False):
-        if posiciones >= 4 and posiciones <= 8:
+        """Crea un juego nuevo con una determinada cantidad de posiciones disponibles"""
+        if 4 <= posiciones <= 8:
             game = cls(publico)
             game.turno = Turno()
             game.tablero = Tablero(posiciones)

@@ -1,18 +1,12 @@
-class Tablero(object):
+class Tablero():
     colores = []
 
     def __init__(self, posiciones:int):
         self.posiciones = posiciones
         self.colores = [False] * posiciones
-    
+
     def cantidad_de_casillas(self):
         return 17 * self.posiciones
-    
-    def seguro(self, casilla:int):    
-        return casilla % 17 == 12 or casilla % 17 == 7
-
-    def salida(self, casilla:int):
-        return casilla % 17 == 0
 
     def add_color(self, color):
         for i in range(len(self.colores)):
@@ -20,13 +14,20 @@ class Tablero(object):
                 self.colores.remove(False)
                 self.colores.append(color)
                 break
-        return
 
     def public_state(self):
         """Retorna el estado actual del objeto"""
         return {
             'colores': self.colores
         }
+
+    @staticmethod
+    def seguro(casilla:int):
+        return casilla % 17 == 12 or casilla % 17 == 7
+
+    @staticmethod
+    def salida(casilla:int):
+        return casilla % 17 == 0
 
     @classmethod
     def deserializar(cls, estado: dict):

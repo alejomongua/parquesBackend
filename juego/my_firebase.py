@@ -1,13 +1,15 @@
+"""Métodos para interfazar con la base de datos de firebase"""
+
 import os
 import json
 import firebase_admin
-from juego import constants
 from firebase_admin import credentials
 from firebase_admin import db
+from juego import constants
 
 # Fetch the service account key JSON file contents
-this_file_dir = '/'.join(os.path.realpath(__file__).split('/')[0:-1])
-secrets_file_path = f'{this_file_dir}/../secretKey.json'
+THIS_FILE_DIR = '/'.join(os.path.realpath(__file__).split('/')[0:-1])
+secrets_file_path = f'{THIS_FILE_DIR}/../secretKey.json'
 
 # Si es en heroku y el archivo no existe hay que crearlo
 if not os.path.isfile(secrets_file_path):
@@ -75,9 +77,10 @@ def public_registry_delete(game):
     """Elimina una partida pública cuando ya inicia"""
     public_games.child(game.id).delete()
 
-def get_game(id: str):
+def get_game(game_id: str):
     """Trae el juego desde la base de datos"""
-    return games.child(id).get()
+    return games.child(game_id).get()
 
 def list_public():
+    """Trae la lista de juegos públicos"""
     return public_games.get()
