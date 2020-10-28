@@ -1,8 +1,8 @@
 from typing import Optional
 
 from fastapi import FastAPI
-import my_firebase
-from game import Game
+from juego import my_firebase
+from juego import Game
 
 app = FastAPI()
 

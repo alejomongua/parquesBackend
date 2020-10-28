@@ -1,6 +1,6 @@
-import firebase_admin
-import constants
 import os.path
+import firebase_admin
+from juego import constants
 from firebase_admin import credentials
 from firebase_admin import db
 

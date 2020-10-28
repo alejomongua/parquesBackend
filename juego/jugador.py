@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from ficha import Ficha
+from juego.ficha import Ficha
 
 class Jugador(object):
     def __init__(self, color: str, nickname: str):

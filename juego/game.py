@@ -3,11 +3,11 @@ import uuid
 import random
 import json
 
-import my_firebase
-from tablero import Tablero
-from jugador import Jugador
-from turno import Turno
-import constants
+from juego import my_firebase
+from juego.tablero import Tablero
+from juego.jugador import Jugador
+from juego.turno import Turno
+from juego import constants
 
 class Game():
     """Clase principal del juego"""
