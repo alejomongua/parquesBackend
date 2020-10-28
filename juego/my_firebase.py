@@ -1,4 +1,5 @@
-import os.path
+import os
+import json
 import firebase_admin
 from juego import constants
 from firebase_admin import credentials
@@ -6,7 +7,26 @@ from firebase_admin import db
 
 # Fetch the service account key JSON file contents
 this_file_dir = '/'.join(os.path.realpath(__file__).split('/')[0:-1])
-cred = credentials.Certificate(f'{this_file_dir}/../secretKey.json')
+secrets_file_path = f'{this_file_dir}/../secretKey.json'
+
+# Si es en heroku y el archivo no existe hay que crearlo
+if not os.path.isfile(secret_file_path):
+    secrets = {
+        'type': os.environ.get('TYPE'),
+        'project_id': os.environ.get('PROJECT_ID'),
+        'private_key_id': os.environ.get('PRIVATE_KEY_ID'),
+        'private_key': os.environ.get('PRIVATE_KEY'),
+        'client_email': os.environ.get('CLIENT_EMAIL'),
+        'client_id': os.environ.get('CLIENT_ID'),
+        'auth_uri': os.environ.get('AUTH_URI'),
+        'token_uri': os.environ.get('TOKEN_URI'),
+        'auth_provider_x509_cert_url': os.environ.get('AUTH_PROVIDER_X509_CERT_URL'),
+        'client_x509_cert_url': os.environ.get('CLIENT_X509_CERT_URL'),
+    }
+
+    json.dump(open(secrets_file_path, 'w'), secrets)
+
+cred = credentials.Certificate(secret_file_path)
 
 # Initialize the app with a service account, granting admin privileges
 firebase_admin.initialize_app(cred, {
