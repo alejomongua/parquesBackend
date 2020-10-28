@@ -24,7 +24,7 @@ if not os.path.isfile(secrets_file_path):
         'client_x509_cert_url': os.environ.get('CLIENT_X509_CERT_URL'),
     }
 
-    json.dump(open(secrets_file_path, 'w'), secrets)
+    json.dump(secrets, open(secrets_file_path, 'w'))
 
 cred = credentials.Certificate(secrets_file_path)
 
