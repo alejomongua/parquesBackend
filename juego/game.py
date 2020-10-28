@@ -340,7 +340,8 @@ class Game():
             self.turno.acciones['comio_dado_2'] = ficha_que_se_comio
 
         # Revise si las fichas que quedan pueden mover
-        if restante := self.turno.dado1 or self.turno.dado2:
+        restante = self.turno.dado1 or self.turno.dado2
+        if restante:
             for contador in range(4):
                 if self.turno.locked[contador]:
                     continue
