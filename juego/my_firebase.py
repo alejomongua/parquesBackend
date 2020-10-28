@@ -10,7 +10,7 @@ this_file_dir = '/'.join(os.path.realpath(__file__).split('/')[0:-1])
 secrets_file_path = f'{this_file_dir}/../secretKey.json'
 
 # Si es en heroku y el archivo no existe hay que crearlo
-if not os.path.isfile(secret_file_path):
+if not os.path.isfile(secrets_file_path):
     secrets = {
         'type': os.environ.get('TYPE'),
         'project_id': os.environ.get('PROJECT_ID'),
@@ -26,7 +26,7 @@ if not os.path.isfile(secret_file_path):
 
     json.dump(open(secrets_file_path, 'w'), secrets)
 
-cred = credentials.Certificate(secret_file_path)
+cred = credentials.Certificate(secrets_file_path)
 
 # Initialize the app with a service account, granting admin privileges
 firebase_admin.initialize_app(cred, {
