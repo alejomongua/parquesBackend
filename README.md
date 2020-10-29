@@ -43,6 +43,12 @@ Este proyecto está ejecutándose en https://parques-api.herokuapp.com, la docum
 
 ## To do:
 
+* Mover este to-do a projects de github
+
+* Documentar las peticiones aquí en el README
+
+* Poner las reglas del juego aquí en el README
+
 * Hacer tests para la interfaz web
 
 * Poder crear un websocket para actualizar en tiempo real el juego en los clientes
