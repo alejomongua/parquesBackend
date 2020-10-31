@@ -40,17 +40,3 @@ El servidor se ejecuta con uvicorn:
 ## Demo
 
 Este proyecto está ejecutándose en https://parques-api.herokuapp.com, la documentación del API está en https://parques-api.herokuapp.com/docs
-
-## To do:
-
-* Mover este to-do a projects de github
-
-* Documentar las peticiones aquí en el README
-
-* Poner las reglas del juego aquí en el README
-
-* Hacer tests para la interfaz web
-
-* Poder crear un websocket para actualizar en tiempo real el juego en los clientes
-
-* Hacer algún cliente con visualización amigable para ver si el juego realmente funciona
