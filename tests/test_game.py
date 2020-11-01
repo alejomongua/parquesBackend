@@ -1129,6 +1129,52 @@ class GameTest(unittest.TestCase):
         self.assertFalse(game.turno.color == game.jugadores[0].color)
         self.assertFalse(game.turno.lanzado)
 
+    def test_tres_intentos_con_todas_en_la_carcel(self):
+        # Intente hasta que tres veces seguidas no saque pares
+        while True:
+            game = iniciar_juego(4)
+
+            # Lance los dados
+            resultado = game.lanzar(game.jugadores[0].key)
+
+            # Verifique que no hay error
+            with self.assertRaises(KeyError):
+                resultado['error']
+
+            # Verifique si saco pares
+            if game.turno.dado1 == game.turno.dado2:
+                continue
+
+            # Lance los dados
+            resultado = game.lanzar(game.jugadores[0].key)
+
+            # Verifique que no hay error
+            with self.assertRaises(KeyError):
+                resultado['error']
+
+            # Verifique si saco pares
+            if game.turno.dado1 == game.turno.dado2:
+                continue
+
+            # Lance los dados
+            resultado = game.lanzar(game.jugadores[0].key)
+
+            # Verifique que no hay error
+            with self.assertRaises(KeyError):
+                resultado['error']
+
+            # Verifique si saco pares
+            if game.turno.dado1 == game.turno.dado2:
+                continue
+
+            # Ahora es el turno del siguiente jugador
+            resultado = game.lanzar(game.jugadores[1].key)
+
+            # Verifique que no hay error
+            with self.assertRaises(KeyError):
+                resultado['error']
+
+            break
 
 if __name__ == '__main__':
     unittest.main()

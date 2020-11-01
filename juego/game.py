@@ -593,7 +593,7 @@ class Game():
 
     def siguiente_turno(self):
         """Hace el setup para el siguiente turno"""
-        if self.turno.pares is None and self.turno.intentos == 0:
+        if self.turno.pares is None and self.turno.intentos <= 0:
             indice_actual = [jugador.color for jugador in self.jugadores].index(self.turno.color)
             siguiente_jugador = self.jugadores[(indice_actual + 1) % len(self.jugadores)]
             self.turno.siguiente_turno(siguiente_jugador.color)
@@ -601,8 +601,6 @@ class Game():
             self.turno.intentos = siguiente_jugador.cantidad_lanzamientos()
         else:
             self.turno.siguiente_turno()
-            if self.turno.intentos > 0 and not self.turno.pares:
-                self.turno.intentos -= 1
 
     def serializar(self):
         """
