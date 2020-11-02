@@ -830,7 +830,7 @@ Para instalar este proyecto se recomienda usar un virtual environment, se necesi
 
 Para ejecutar los tests, ejecute el siguiente comando en la raiz del proyecto
 
-    python -m tests.test_game
+    python -m pytest
 
 ## Correr el webserver
 
