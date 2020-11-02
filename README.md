@@ -46,6 +46,8 @@ Parqués es un juego de mesa popular en Colombia, es una variación del parchís
 
 * Cuando un jugador corona todas sus fichas, la partida finaliza y dicho jugador es el ganador
 
+* Cuando una ficha da la vuelta al tablero, llega a lo que llamo la _recta final_, que es un tramo de 8 casillas antes de llegar a la meta que es diferente para cada jugador. En este tramo las fichas no pueden ser comidas.
+
 ## Definiciones
 
 * **Carcel:** Posición inicial de las fichas, las fichas en la carcel no pueden ser movidas
@@ -163,30 +165,23 @@ La petición responde con el objeto que describe el estado del juego (vease obje
         "fichas_en_casillas": {},
         "id": "-ML5kq0kGcV7rtLUZZdE",
         "turno": {
-            "color": null,
+            "color": "Naranja",
             "dado1": null,
             "dado2": null,
             "pares": null,
             "lanzado": false,
-            "locked": [
-            false,
-            false,
-            false,
-            false
-            ],
-            "color_soplable": null,
-            "intentos": 3,
-            "acciones": {}
-        },
+            "valor_original_dado1": null,
+            "valor_original_dado2": null,
+            "intentos": 3
+        }
         "tablero": {
-            "posiciones": 6,
             "colores": [
-            false,
-            false,
-            false,
-            false,
-            false,
-            false
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
             ]
         }
     }
@@ -218,108 +213,90 @@ La petición responde con el objeto que describe el estado del juego (vease obje
         "last_turn": 1604014338.2837567,
         "jugadores": [
             {
-            "color": "Azul",
-            "nickname": "Alejo",
-            "retirado": false,
-            "finalizado": false,
-            "fichas": [
-                {
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false,
-                "posicion": 0
-                },
-                {
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false,
-                "posicion": 0
-                },
-                {
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false,
-                "posicion": 0
-                },
-                {
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false,
-                "posicion": 0
-                }
-            ],
-            "salida": 0,
-            "key": "ff1bc5aa-2eac-4e30-96a0-00659674cb99"
+                "color": "Azul",
+                "nickname": "Alejo",
+                "retirado": false,
+                "finalizado": false,
+                "fichas": [
+                    {
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false,
+                        "posicion": 0
+                    },
+                    {
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false,
+                        "posicion": 0
+                    },
+                    {
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false,
+                        "posicion": 0
+                    },
+                    {
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false,
+                        "posicion": 0
+                    }
+                ],
+                "salida": 0
             },
             {
-            "color": "Naranja",
-            "nickname": "Matías",
-            "retirado": false,
-            "finalizado": false,
-            "fichas": [
-                {
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false,
-                "posicion": 17
-                },
-                {
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false,
-                "posicion": 17
-                },
-                {
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false,
-                "posicion": 17
-                },
-                {
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false,
-                "posicion": 17
-                }
-            ],
-            "salida": 17,
-            "key": "2d7f9381-d098-4e14-a0ff-18764c0ae683"
+                "color": "Naranja",
+                "nickname": "Matías",
+                "retirado": false,
+                "finalizado": false,
+                "fichas": [
+                    {
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false,
+                        "posicion": 17
+                    },
+                    {
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false,
+                        "posicion": 17
+                    },
+                    {
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false,
+                        "posicion": 17
+                    },
+                    {
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false,
+                        "posicion": 17
+                    }
+                ],
+                "salida": 17
             }
         ],
         "fichas_en_casillas": {},
         "id": "-MKqg1mhOxA48c-fYrkl",
         "turno": {
-            "color": "Azul",
+            "color": "Naranja",
             "dado1": 6,
             "dado2": 4,
             "pares": null,
             "lanzado": false,
-            "locked": [
-            false,
-            false,
-            false,
-            false
-            ],
-            "color_soplable": "Naranja",
-            "intentos": 3,
-            "acciones": {
-            "dado1": 6,
-            "dado2": 4,
-            "posiciones": [
-                17,
-                17,
-                17,
-                17
-            ]
-            }
+            "valor_original_dado1": null,
+            "valor_original_dado2": null,
+            "intentos": 3
         },
         "tablero": {
-            "posiciones": 4,
             "colores": [
-            "Azul",
-            "Naranja",
-            false,
-            false
+                "Azul",
+                "Naranja",
+                false,
+                false
             ]
         }
     }
@@ -361,7 +338,7 @@ La respuesta entrega una llave que es única para cada jugador y que será neces
 
     {
         "success": true,
-        "key": "b696ca1e-d369-4483-a81c-78472f1eafa7"
+        "key": "b696ca1e-d369-4483-a81c-78472f1eafa0"
     }
 
 ### /juegos/{id_juego}/iniciar
@@ -386,80 +363,80 @@ La petición responde con el objeto que describe el estado del juego (vease obje
         "id": "-ML5kq0kGcV7rtLUZZdE",
         "tablero": {
             "colores": [
-            false,
-            "Naranja",
-            false,
-            false,
-            false,
-            "Azul oscuro"
+                false,
+                "Naranja",
+                false,
+                false,
+                false,
+                "Azul oscuro"
             ]
         },
         "jugadores": [
             {
-            "nickname": "Matías",
-            "color": "Naranja",
-            "fichas": [
-                {
-                "posicion": 17,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                },
-                {
-                "posicion": 17,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                },
-                {
-                "posicion": 17,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                },
-                {
-                "posicion": 17,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                }
-            ],
-            "retirado": false,
-            "finalizado": false,
-            "salida": 17
+                "nickname": "Matías",
+                "color": "Naranja",
+                "fichas": [
+                    {
+                        "posicion": 17,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    },
+                    {
+                        "posicion": 17,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    },
+                    {
+                        "posicion": 17,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    },
+                    {
+                        "posicion": 17,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    }
+                ],
+                "retirado": false,
+                "finalizado": false,
+                "salida": 17
             },
             {
-            "nickname": "Alejo",
-            "color": "Azul oscuro",
-            "fichas": [
-                {
-                "posicion": 85,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                },
-                {
-                "posicion": 85,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                },
-                {
-                "posicion": 85,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                },
-                {
-                "posicion": 85,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                }
-            ],
-            "retirado": false,
-            "finalizado": false,
-            "salida": 85
+                "nickname": "Alejo",
+                "color": "Azul oscuro",
+                "fichas": [
+                    {
+                        "posicion": 85,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    },
+                    {
+                        "posicion": 85,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    },
+                    {
+                        "posicion": 85,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    },
+                    {
+                        "posicion": 85,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    }
+                ],
+                "retirado": false,
+                "finalizado": false,
+                "salida": 85
             }
         ],
         "finalizado": false,
@@ -470,7 +447,8 @@ La petición responde con el objeto que describe el estado del juego (vease obje
             "dado2": null,
             "pares": null,
             "lanzado": false,
-            "acciones": null,
+            "valor_original_dado1": null,
+            "valor_original_dado2": null,
             "intentos": 3
         },
         "ultimo_turno": 1604285299.0205038
@@ -500,80 +478,80 @@ La petición responde con el objeto que describe el estado del juego (vease obje
         "id": "-ML5kq0kGcV7rtLUZZdE",
         "tablero": {
             "colores": [
-            false,
-            "Naranja",
-            false,
-            false,
-            false,
-            "Azul oscuro"
+                false,
+                "Naranja",
+                false,
+                false,
+                false,
+                "Azul oscuro"
             ]
         },
         "jugadores": [
             {
-            "nickname": "Matías",
-            "color": "Naranja",
-            "fichas": [
-                {
-                "posicion": 17,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                },
-                {
-                "posicion": 17,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                },
-                {
-                "posicion": 17,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                },
-                {
-                "posicion": 17,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                }
-            ],
-            "retirado": false,
-            "finalizado": false,
-            "salida": 17
+                "nickname": "Matías",
+                "color": "Naranja",
+                "fichas": [
+                    {
+                        "posicion": 17,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    },
+                    {
+                        "posicion": 17,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    },
+                    {
+                        "posicion": 17,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    },
+                    {
+                        "posicion": 17,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    }
+                ],
+                "retirado": false,
+                "finalizado": false,
+                "salida": 17
             },
             {
-            "nickname": "Alejo",
-            "color": "Azul oscuro",
-            "fichas": [
-                {
-                "posicion": 85,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                },
-                {
-                "posicion": 85,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                },
-                {
-                "posicion": 85,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                },
-                {
-                "posicion": 85,
-                "encarcelada": true,
-                "coronada": false,
-                "recta_final": false
-                }
-            ],
-            "retirado": false,
-            "finalizado": false,
-            "salida": 85
+                "nickname": "Alejo",
+                "color": "Azul oscuro",
+                "fichas": [
+                    {
+                        "posicion": 85,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    },
+                    {
+                        "posicion": 85,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    },
+                    {
+                        "posicion": 85,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    },
+                    {
+                        "posicion": 85,
+                        "encarcelada": true,
+                        "coronada": false,
+                        "recta_final": false
+                    }
+                ],
+                "retirado": false,
+                "finalizado": false,
+                "salida": 85
             }
         ],
         "finalizado": false,
@@ -582,18 +560,10 @@ La petición responde con el objeto que describe el estado del juego (vease obje
             "color": "Naranja",
             "dado1": 5,
             "dado2": 5,
-            "pares": 2,
-            "lanzado": true,
-            "acciones": {
-            "dado1": 5,
-            "dado2": 5,
-            "posiciones": [
-                17,
-                17,
-                17,
-                17
-            ]
-            },
+            "pares": 1,
+            "lanzado": false,
+            "valor_original_dado1": null,
+            "valor_original_dado2": null,
             "intentos": 2
         },
         "ultimo_turno": 1604285546.1196947
@@ -623,15 +593,217 @@ La petición responde con el objeto que describe el estado del juego (vease obje
 
 ### /juegos/{id_juego}/sacar_de_la_carcel
 
-to do
+Si sacó pares y tiene fichas en la carcel, con esta petición saca de la carcel.
+
+#### Parámetros
+
+* *id_juego*: (argumento en la URL) String correspondiente al identificador único del juego
+
+* *player_key*: (obligatorio) llave que se entregó al jugador al momento del registro
+
+#### Ejemplo de petición
+
+    curl -X GET "https://parques-api.herokuapp.com/juegos/-ML5kq0kGcV7rtLUZZdE/sacar_de_la_carcel?player_key=b696ca1e-d369-4483-a81c-78472f1eafa0" -H  "accept: application/json"
+
+#### Respuesta
+
+La petición responde con el objeto que describe el estado del juego (vease objeto estado)
 
 ### /juegos/{id_juego}/soplar
 
-to do
+Declara que un movimiento del jugador interior es ilegal y debe enviarse una ficha a la carcel.
+
+#### Parámetros
+
+* *id_juego*: (argumento en la URL) String correspondiente al identificador único del juego
+
+* *player_key*: (obligatorio) llave que se entregó al jugador al momento del registro
+
+* _ficha_: valor entre 0 y 3 que representa la ficha que se va a mover
+
+#### Ejemplo de petición
+
+    curl -X GET "https://parques-api.herokuapp.com/juegos/-ML5kq0kGcV7rtLUZZdE/soplar?player_key=b696ca1e-d369-4483-a81c-78472f1eafa0&ficha=2" -H  "accept: application/json"
+
+#### Respuesta
+
+La petición responde con el objeto que describe el estado del juego (vease objeto estado)
 
 ## Objeto estado del juego
 
-to do
+La mayoría de las peticiones responden con un objeto que repersenta el estado del juego para poderlo renderizar en un tablero, dicho objeto tiene los siguientes atributos
+
+### id
+
+* _Tipo_: String
+
+* _Descripción_: Es el identificador único del juego
+
+* _Ejemplo_: "-ML5kq0kGcV7rtLUZZdE"
+
+### tablero
+
+* _Tipo_: Objeto
+
+* _Descripción_: Objeto que representa el tablero del juego.
+
+* _Componentes_:
+
+    - _Colores_: (Array de strings) Corresponde a un array que representa las diferentes posiciones del tablero. Si el valor es null es porque en esa posición no hay ningún jugador
+
+* _Ejemplo_:
+
+    {
+        "colores": [
+            false,
+            "Naranja",
+            false,
+            false,
+            false,
+            "Azul oscuro"
+        ]
+    }
+
+### Jugador
+
+* _Tipo_: Objeto
+
+* _Descripción_: Objeto que representa el estado de un jugador, en el juego hay un arreglo de objetos tipo jugador
+
+* _Componentes_:
+
+    - _color_: (String) Color del jugador
+
+    - _nickname_: (String) Nombre o apodo del jugador durante la partida
+
+    * _retirado_: (Boolean) Indica si el jugador se rindió o retiró de la partida
+
+    * _finalizado_: (Boolean) Indica si el jugador la coronó todas sus fichas
+
+    * _fichas_: (Array) Arreglo de objetos tipo ficha
+
+    * _salida_: (Integer) Casilla de salida, en esta casilla iniciarán las fichas al salir de la carcel
+
+* _Ejemplo_:
+
+    {
+        "color": "Naranja",
+        "nickname": "Matías",
+        "retirado": false,
+        "finalizado": false,
+        "fichas": [
+            {
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false,
+                "posicion": 17
+            },
+            {
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false,
+                "posicion": 17
+            },
+            {
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false,
+                "posicion": 17
+            },
+            {
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false,
+                "posicion": 17
+            }
+        ],
+        "salida": 17
+    }
+
+### Ficha
+
+* _Tipo_: Objeto
+
+* _Descripción_: Estado de una ficha determinada
+
+* _Componentes_:
+
+    - _encarcelada_: (Boolean) Indica si la ficha está en la carcel
+
+    - _coronada_: (Boolean) Indica si la ficha finalizó ya la partida
+
+    - *recta_final*: (Boolean) Indica si la ficha ya llegó al tramo final. Cuando una ficha llega a la recta final su posición pasa a 0 y cuando llega a 8 la ficha es coronada
+
+    - *posicion*: (Integer) Posición de la ficha en el tablero.
+
+* _Ejemplo_:
+
+    {
+        "encarcelada": true,
+        "coronada": false,
+        "recta_final": false,
+        "posicion": 17
+    }
+
+### finalizado
+
+* _Ejemplo_: false,
+
+### inicio
+
+* _Ejemplo_: 1604283752.3218622,
+
+### turno
+
+* _Tipo_: Objeto
+
+* _Descripción_: Estado actual del turno en el juego
+
+* _Componentes_:
+
+    - _color_: (String) Indica de quien es el turno actual
+
+    - _dado1_: (Integer) Indica el valor sacado en el dado 1 que está pendiente por mover, cuando se mueve se vuelve 0
+
+    - _dado2_: (Integer) Indica el valor sacado en el dado 2 que está pendiente por mover, cuando se mueve se vuelve 0
+
+    - _pares_: (Integer) Indica la cantidad de pares seguidos en este turno. Si sacó pares pero los usó para sacar de la carcel es 0, si no sacó pares es null
+
+    - _lanzado_: (Boolean) Indica si ya se lanzaron los dados, si es _false_ es momento de lanzar los dados
+
+    - _intentos_: Cantidad de intentos restantes en caso de que tenga todas las fichas en la carcel
+
+    - *valor_original_dado1*: (Integer) Indica el valor sacado en el dado 1 durante el último lanzamiento, sirve para poder mostrarlo en el frontend ya que el valor dado1 se vuelve 0 al mover
+
+    - *valor_original_dado2*: (Integer) Indica el valor sacado en el dado 2 durante el último lanzamiento, sirve para poder mostrarlo en el frontend ya que el valor dado2 se vuelve 0 al mover
+
+* _Ejemplo_:
+
+    {
+        "color": "Naranja",
+        "dado1": 5,
+        "dado2": 5,
+        "pares": 1,
+        "lanzado": false,
+        "valor_original_dado1": 5,
+        "valor_original_dado2": 5,
+        "intentos": 2
+    }
+
+### ultimo_turno
+
+_Ejemplo_: 1604285546.1196947
+
+## Mensajes de error
+
+Cuando una petición no es exitosa por alguna razón contemplada, el codigo de error será 400 y la respuesta tendrá la siguiente estructura:
+
+    {
+        "error": true,
+        "mensaje": "Espere su turno"
+    }
+
+Donde el mensaje será la causa de la falla en la petición y deberá mostrarse al usuario final
 
 ## Acerca de este proyecto
 

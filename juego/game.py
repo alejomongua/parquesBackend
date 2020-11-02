@@ -136,16 +136,10 @@ class Game():
         """Realiza un lanzamiento de dados"""
         jugador = self.encontrar_jugador(player_key)
 
-        if jugador is None:
+        if jugador is None or self.turno.color != jugador.color:
             return {
                 'error': True,
-                'mensaje': 'La llave no coincide con ningún jugador en este juego'
-            }
-
-        if self.turno.color != jugador.color:
-            return {
-                'error': True,
-                'mensaje': f'Espere su turno - jugador {jugador.color}'
+                'mensaje': 'Espere su turno'
             }
 
         if self.turno.lanzado:
@@ -224,10 +218,10 @@ class Game():
         """
         jugador = self.encontrar_jugador(player_key)
 
-        if jugador is None:
+        if jugador is None or self.turno.color != jugador.color:
             return {
                 'error': True,
-                'mensaje': 'La llave no coincide con ningún jugador en este juego'
+                'mensaje': 'Espere su turno'
             }
 
         if ficha > len(jugador.fichas):
@@ -236,11 +230,6 @@ class Game():
                 'mensaje': 'Ficha erronea'
             }
 
-        if self.turno.color != jugador.color:
-            return {
-                'error': True,
-                'mensaje': 'Espere su turno'
-            }
 
         if not self.turno.lanzado:
             return {
@@ -370,13 +359,7 @@ class Game():
         """
         jugador = self.encontrar_jugador(player_key)
 
-        if jugador is None:
-            return {
-                'error': True,
-                'mensaje': 'La llave no coincide con ningún jugador en este juego'
-            }
-
-        if self.turno.color != jugador.color:
+        if jugador is None or self.turno.color != jugador.color:
             return {
                 'error': True,
                 'mensaje': 'Espere su turno'
@@ -453,10 +436,10 @@ class Game():
         """Corona una ficha por pares"""
         jugador = self.encontrar_jugador(player_key)
 
-        if jugador is None:
+        if jugador is None or self.turno.color != jugador.color:
             return {
                 'error': True,
-                'mensaje': 'La llave no coincide con ningún jugador en este juego'
+                'mensaje': 'Espere su turno'
             }
 
         if self.turno.pares is None or self.turno.pares < 3:
