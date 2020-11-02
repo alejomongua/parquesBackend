@@ -42,6 +42,13 @@ def informacion_del_juego(response: Response, id_juego: str):
 @app.get("/juegos/{id_juego}/unirse")
 def unirse(response: Response, id_juego: str, color: str, nickname: str):
     game = Game.retrieve_from_database(id_juego)
+    if game is None:
+        response.status_code = 400
+        return {
+            'error': True,
+            'mensaje': 'El juego no existe, verifique el ID'
+        }
+
     estado = game.join(color, nickname)
 
     if estado.get('error', None):
@@ -52,6 +59,13 @@ def unirse(response: Response, id_juego: str, color: str, nickname: str):
 @app.get("/juegos/{id_juego}/iniciar")
 def iniciar(response: Response, id_juego: str):
     game = Game.retrieve_from_database(id_juego)
+    if game is None:
+        response.status_code = 400
+        return {
+            'error': True,
+            'mensaje': 'El juego no existe, verifique el ID'
+        }
+
     estado = game.start()
 
     if estado.get('error', None):
@@ -62,6 +76,13 @@ def iniciar(response: Response, id_juego: str):
 @app.get("/juegos/{id_juego}/lanzar_dado")
 def lanzar(response: Response, id_juego: str, player_key: str):
     game = Game.retrieve_from_database(id_juego)
+    if game is None:
+        response.status_code = 400
+        return {
+            'error': True,
+            'mensaje': 'El juego no existe, verifique el ID'
+        }
+
     estado = game.lanzar(player_key)
 
     if estado.get('error', None):
@@ -72,6 +93,13 @@ def lanzar(response: Response, id_juego: str, player_key: str):
 @app.get("/juegos/{id_juego}/mover_ficha")
 def mover(response: Response, id_juego: str, player_key: str, ficha: int, casillas: int):
     game = Game.retrieve_from_database(id_juego)
+    if game is None:
+        response.status_code = 400
+        return {
+            'error': True,
+            'mensaje': 'El juego no existe, verifique el ID'
+        }
+
     estado = game.mover(player_key, ficha, casillas)
 
     if estado.get('error', None):
@@ -82,6 +110,13 @@ def mover(response: Response, id_juego: str, player_key: str, ficha: int, casill
 @app.get("/juegos/{id_juego}/sacar_de_la_carcel")
 def sacar_de_la_carcel(response: Response, id_juego: str, player_key: str):
     game = Game.retrieve_from_database(id_juego)
+    if game is None:
+        response.status_code = 400
+        return {
+            'error': True,
+            'mensaje': 'El juego no existe, verifique el ID'
+        }
+
     estado = game.sacar_de_la_carcel(player_key)
 
     if estado.get('error', None):
@@ -92,6 +127,13 @@ def sacar_de_la_carcel(response: Response, id_juego: str, player_key: str):
 @app.get("/juegos/{id_juego}/soplar")
 def soplar(response: Response, id_juego: str, player_key: str, ficha: int):
     game = Game.retrieve_from_database(id_juego)
+    if game is None:
+        response.status_code = 400
+        return {
+            'error': True,
+            'mensaje': 'El juego no existe, verifique el ID'
+        }
+
     estado = game.soplar(player_key, ficha)
 
     if estado.get('error', None):
