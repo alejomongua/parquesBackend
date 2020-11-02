@@ -48,13 +48,21 @@ class Turno():
 
     def public_state(self):
         """Retorna el estado actual del objeto"""
+
+        valor_original_dado1 = None
+        valor_original_dado2 = None
+        if isinstance(self.acciones, dict):
+            valor_original_dado1 = self.acciones.get('dado1', None)
+            valor_original_dado2 = self.acciones.get('dado2', None)
+
         return {
             'color': self.color,
             'dado1': self.dado1,
             'dado2': self.dado2,
             'pares': self.pares,
             'lanzado': self.lanzado,
-            'acciones': self.acciones,
+            'valor_original_dado1': valor_original_dado1,
+            'valor_original_dado2': valor_original_dado2,
             'intentos': self.intentos
         }
 
