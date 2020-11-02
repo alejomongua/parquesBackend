@@ -62,6 +62,66 @@ SAMPLE_GAME = {
     }
 }
 
+DEFAULT_PLAYERS = [ {
+    "color" : "Naranja",
+    "fichas" : [ {
+        "coronada" : False,
+        "encarcelada" : True,
+        "posicion" : 17,
+        "recta_final" : False
+    }, {
+        "coronada" : False,
+        "encarcelada" : True,
+        "posicion" : 17,
+        "recta_final" : False
+    }, {
+        "coronada" : False,
+        "encarcelada" : True,
+        "posicion" : 17,
+        "recta_final" : False
+    }, {
+        "coronada" : False,
+        "encarcelada" : True,
+        "posicion" : 17,
+        "recta_final" : False
+    } ],
+    "finalizado" : False,
+    "key" : "e58b050d-2c40-40b6-b491-eccecada7df0",
+    "nickname" : "Matías",
+    "retirado" : False,
+    "salida" : 17
+    }, {
+    "color" : "Azul oscuro",
+    "fichas" : [ {
+        "coronada" : False,
+        "encarcelada" : True,
+        "posicion" : 85,
+        "recta_final" : False
+    }, {
+        "coronada" : False,
+        "encarcelada" : True,
+        "posicion" : 85,
+        "recta_final" : False
+    }, {
+        "coronada" : False,
+        "encarcelada" : True,
+        "posicion" : 85,
+        "recta_final" : False
+    }, {
+        "coronada" : False,
+        "encarcelada" : True,
+        "posicion" : 85,
+        "recta_final" : False
+    } ],
+    "finalizado" : False,
+    "key" : "b696ca1e-d369-4483-a81c-78472f1eafa0",
+    "nickname" : "Alejo",
+    "retirado" : False,
+    "salida" : 85
+} ]
+
+DEFAULT_TABLERO = { 'colores': ['Azul oscuro', 'Naranja', False, False] }
+
 my_firebase.register_game = Mock(side_effect=side_effect)
 my_firebase.public_registry_delete = Mock()
 my_firebase.public_registry_update = Mock()
@@ -110,64 +170,8 @@ class ServerTest(unittest.TestCase):
 
     def test_iniciar(self):
         mocked_response = SAMPLE_GAME.copy()
-        mocked_response['jugadores'] = [ {
-            "color" : "Naranja",
-            "fichas" : [ {
-                "coronada" : False,
-                "encarcelada" : True,
-                "posicion" : 17,
-                "recta_final" : False
-            }, {
-                "coronada" : False,
-                "encarcelada" : True,
-                "posicion" : 17,
-                "recta_final" : False
-            }, {
-                "coronada" : False,
-                "encarcelada" : True,
-                "posicion" : 17,
-                "recta_final" : False
-            }, {
-                "coronada" : False,
-                "encarcelada" : True,
-                "posicion" : 17,
-                "recta_final" : False
-            } ],
-            "finalizado" : False,
-            "key" : "e58b050d-2c40-40b6-b491-eccecada7df0",
-            "nickname" : "Matías",
-            "retirado" : False,
-            "salida" : 17
-            }, {
-            "color" : "Azul oscuro",
-            "fichas" : [ {
-                "coronada" : False,
-                "encarcelada" : True,
-                "posicion" : 85,
-                "recta_final" : False
-            }, {
-                "coronada" : False,
-                "encarcelada" : True,
-                "posicion" : 85,
-                "recta_final" : False
-            }, {
-                "coronada" : False,
-                "encarcelada" : True,
-                "posicion" : 85,
-                "recta_final" : False
-            }, {
-                "coronada" : False,
-                "encarcelada" : True,
-                "posicion" : 85,
-                "recta_final" : False
-            } ],
-            "finalizado" : False,
-            "key" : "b696ca1e-d369-4483-a81c-78472f1eafa0",
-            "nickname" : "Alejo",
-            "retirado" : False,
-            "salida" : 85
-            } ]
-        mocked_response['tablero'] = { 'colores': ['Azul oscuro', 'Naranja', False, False] }
+        mocked_response['jugadores'] = DEFAULT_PLAYERS
+        mocked_response['tablero'] = DEFAULT_TABLERO
         my_firebase.get_game = Mock(return_value=mocked_response)
         response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/iniciar')
         respuesta = response.json()
@@ -177,39 +181,76 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(respuesta['id'], SAMPLE_GAME['id'])
 
     def test_lanzar_dado(self):
-        # to do
-        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/lanzar_dado')
+        mocked_response = SAMPLE_GAME.copy()
+        mocked_response['jugadores'] = DEFAULT_PLAYERS
+        mocked_response['tablero'] = DEFAULT_TABLERO
+        mocked_response['iniciado'] = True
+        mocked_response['turno'] = {
+            "acciones" : None,
+            "color" : "Naranja",
+            "color_soplable" : False,
+            "dado1" : None,
+            "dado2" : None,
+            "intentos" : 3,
+            "lanzado" : False,
+            "locked" : [ False, False, False, False ],
+            "pares" : None
+        }
+        my_firebase.get_game = Mock(return_value=mocked_response)
+        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/lanzar_dado', params={})
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
         with self.assertRaises(KeyError):
             respuesta['error']
-
+        # to do
 
     def test_mover_ficha(self):
-        # to do
+        mocked_response = SAMPLE_GAME.copy()
+        mocked_response['jugadores'] = DEFAULT_PLAYERS
+        mocked_response['tablero'] = DEFAULT_TABLERO
+        mocked_response['iniciado'] = True
+        mocked_response['turno'] = {
+            # to do
+        }
+        my_firebase.get_game = Mock(return_value=mocked_response)
         response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/mover_ficha')
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
         with self.assertRaises(KeyError):
             respuesta['error']
-
+        # to do
 
     def test_sacar_de_la_carcel(self):
-        # to do
+        mocked_response = SAMPLE_GAME.copy()
+        mocked_response['jugadores'] = DEFAULT_PLAYERS
+        mocked_response['tablero'] = DEFAULT_TABLERO
+        mocked_response['iniciado'] = True
+        mocked_response['turno'] = {
+            # to do
+        }
+        my_firebase.get_game = Mock(return_value=mocked_response)
         response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/sacar_de_la_carcel')
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
         with self.assertRaises(KeyError):
             respuesta['error']
-
+        # to do
 
     def test_soplar(self):
-        # to do
+        mocked_response = SAMPLE_GAME.copy()
+        mocked_response['jugadores'] = DEFAULT_PLAYERS
+        mocked_response['tablero'] = DEFAULT_TABLERO
+        mocked_response['iniciado'] = True
+        mocked_response['turno'] = {
+            # to do
+        }
+        my_firebase.get_game = Mock(return_value=mocked_response)
         response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/soplar')
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
         with self.assertRaises(KeyError):
             respuesta['error']
+        # to do
 
 if __name__ == '__main__':
     unittest.main()
