@@ -86,6 +86,553 @@ En esta implementación se tiene lo siguiente:
 
 Más información acerca del parqués en https://es.wikipedia.org/wiki/Parqu%C3%A9s
 
+## Documentación del API
+
+El API responde a peticiones tipo GET únicamente. La documentación de los parámetros y las URL se pueden acceder en https://parques-api.herokuapp.com/docs
+
+### /juegos
+
+Lista todos los juegos públicos abiertos, retorna un objeto json con la siguiente estructura: Cada llave corresponde al ID del juego y  contiene los siguientes parámetros:
+
+#### Respuesta
+
+    - *created_at*: Timestamp de creación del juego
+
+    - _jugadores_: Cantidad de jugadores inscritos actualmente en el juego
+
+    - _posiciones_: Posiciones disponibles en el juego
+
+#### Ejemplo de respuesta:
+
+    {
+        "-MKlw6VSTSf-FPBaTxfB": {
+            "created_at": 1603934385.9833121,
+            "jugadores": 0,
+            "posiciones": 4
+        },
+        "-MKlxam1Zjtz14wZgMNp": {
+            "created_at": 1603934776.2540152,
+            "jugadores": 0,
+            "posiciones": 4
+        },
+        "-MKm6cJ_TwMAEaTpBiQn": {
+            "created_at": 1603937403.9798372,
+            "jugadores": 0,
+            "posiciones": 4
+        },
+        "-MKm8JvbKJmMAumJbmoU": {
+            "created_at": 1603937848.809657,
+            "jugadores": 0,
+            "posiciones": 4
+        },
+        "-ML3-HtshKPcKrME5Jk6": {
+            "created_at": 1604237470.857504,
+            "jugadores": 0,
+            "posiciones": 4
+        }
+    }
+
+### /juegos/crear_partida
+
+Crea un juego nuevo.
+
+#### Parámetros
+
+* _posiciones_: cantidad de posiciones en el tablero, este número corresponde a la cantidad máxima de jugadores en esta partida, debe estar entre 4 y 8. Si no se ingresa, el valor por defecto es 4 posiciones
+
+* _publico_: valor booleano que indica si la partida es pública o es privada. Por defecto es _true_, es decir, que la partida se listará en el índice de partidas públicas para que cualquiera se pueda unir
+
+#### Ejemplo de petición:
+
+    curl -X GET "https://parques-api.herokuapp.com/juegos/crear_partida?posiciones=6&publico=true" -H  "accept: application/json"
+
+#### Respuesta
+
+La petición responde con el objeto que describe el estado del juego (vease objeto estado)
+
+#### Ejemplo de respuesta
+
+    {
+        "publico": true,
+        "iniciado": false,
+        "finalizado": false,
+        "created_at": 1604283752.3218622,
+        "started_at": null,
+        "last_turn": 1604283752.3218877,
+        "jugadores": [],
+        "fichas_en_casillas": {},
+        "id": "-ML5kq0kGcV7rtLUZZdE",
+        "turno": {
+            "color": null,
+            "dado1": null,
+            "dado2": null,
+            "pares": null,
+            "lanzado": false,
+            "locked": [
+            false,
+            false,
+            false,
+            false
+            ],
+            "color_soplable": null,
+            "intentos": 3,
+            "acciones": {}
+        },
+        "tablero": {
+            "posiciones": 6,
+            "colores": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+            ]
+        }
+    }
+
+### /juegos/{id_juego}
+
+Trae el estado actual del juego
+
+#### Parámetros
+
+* *id_juego*: (argumento en la URL) String correspondiente al identificador único del juego
+
+#### Ejemplo de petición
+
+    curl -X GET "https://parques-api.herokuapp.com/juegos/-MKqg1mhOxA48c-fYrkl" -H  "accept: application/json"
+
+#### Respuesta
+
+La petición responde con el objeto que describe el estado del juego (vease objeto estado)
+
+#### Ejemplo de respuesta
+
+    {
+        "publico": true,
+        "iniciado": true,
+        "finalizado": false,
+        "created_at": 1604014058.3548338,
+        "started_at": 1604014165.213741,
+        "last_turn": 1604014338.2837567,
+        "jugadores": [
+            {
+            "color": "Azul",
+            "nickname": "Alejo",
+            "retirado": false,
+            "finalizado": false,
+            "fichas": [
+                {
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false,
+                "posicion": 0
+                },
+                {
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false,
+                "posicion": 0
+                },
+                {
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false,
+                "posicion": 0
+                },
+                {
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false,
+                "posicion": 0
+                }
+            ],
+            "salida": 0,
+            "key": "ff1bc5aa-2eac-4e30-96a0-00659674cb99"
+            },
+            {
+            "color": "Naranja",
+            "nickname": "Matías",
+            "retirado": false,
+            "finalizado": false,
+            "fichas": [
+                {
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false,
+                "posicion": 17
+                },
+                {
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false,
+                "posicion": 17
+                },
+                {
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false,
+                "posicion": 17
+                },
+                {
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false,
+                "posicion": 17
+                }
+            ],
+            "salida": 17,
+            "key": "2d7f9381-d098-4e14-a0ff-18764c0ae683"
+            }
+        ],
+        "fichas_en_casillas": {},
+        "id": "-MKqg1mhOxA48c-fYrkl",
+        "turno": {
+            "color": "Azul",
+            "dado1": 6,
+            "dado2": 4,
+            "pares": null,
+            "lanzado": false,
+            "locked": [
+            false,
+            false,
+            false,
+            false
+            ],
+            "color_soplable": "Naranja",
+            "intentos": 3,
+            "acciones": {
+            "dado1": 6,
+            "dado2": 4,
+            "posiciones": [
+                17,
+                17,
+                17,
+                17
+            ]
+            }
+        },
+        "tablero": {
+            "posiciones": 4,
+            "colores": [
+            "Azul",
+            "Naranja",
+            false,
+            false
+            ]
+        }
+    }
+
+### /juegos/{id_juego}/unirse
+
+Se une a un juego si aún no ha iniciado y tiene puestos disponibles
+
+#### Parámetros
+
+* *id_juego*: (argumento en la URL) String correspondiente al identificador único del juego
+
+* _color_: (obligatorio), color que usará el jugador en la partida y servirá como identificador único de dicho jugador durante la partida, debe ser una de las llaves en el siguiente diccionario:
+
+```
+{
+    "Amarillo": "#ffe119",
+    "Azul": "#4363d8",
+    "Naranja": "#f58231",
+    "Lavanda": "#dcbeff",
+    "Marrón": "#800000",
+    "Azul oscuro": "#000075",
+    "Gris": "#a9a9a9",
+    "Negro": "#ffffff"
+}
+```
+
+* _nickname_: (obligatorio) nombre a mostrar del jugador durante la partida
+
+#### Ejemplo de petición
+
+    curl -X GET "https://parques-api.herokuapp.com/juegos/-ML5kq0kGcV7rtLUZZdE/unirse?color=Azul%20oscuro&nickname=Alejo" -H  "accept: application/json"
+
+#### Respuesta
+
+La respuesta entrega una llave que es única para cada jugador y que será necesaria al realizar cualquier jugada en nombre de dicho jugador. Esta llave sirve para asegurarse que el jugador es quien dice ser
+
+#### Ejemplo de respuesta
+
+    {
+        "success": true,
+        "key": "b696ca1e-d369-4483-a81c-78472f1eafa7"
+    }
+
+### /juegos/{id_juego}/iniciar
+
+Inicia la partida, debe haber al menos dos jugadores
+
+#### Parámetros
+
+* *id_juego*: (argumento en la URL) String correspondiente al identificador único del juego
+
+#### Ejemplo de petición
+
+    curl -X GET "https://parques-api.herokuapp.com/juegos/-ML5kq0kGcV7rtLUZZdE/iniciar" -H  "accept: application/json"
+
+#### Respuesta
+
+La petición responde con el objeto que describe el estado del juego (vease objeto estado)
+
+#### Ejemplo de respuesta
+
+    {
+        "id": "-ML5kq0kGcV7rtLUZZdE",
+        "tablero": {
+            "colores": [
+            false,
+            "Naranja",
+            false,
+            false,
+            false,
+            "Azul oscuro"
+            ]
+        },
+        "jugadores": [
+            {
+            "nickname": "Matías",
+            "color": "Naranja",
+            "fichas": [
+                {
+                "posicion": 17,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                },
+                {
+                "posicion": 17,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                },
+                {
+                "posicion": 17,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                },
+                {
+                "posicion": 17,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                }
+            ],
+            "retirado": false,
+            "finalizado": false,
+            "salida": 17
+            },
+            {
+            "nickname": "Alejo",
+            "color": "Azul oscuro",
+            "fichas": [
+                {
+                "posicion": 85,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                },
+                {
+                "posicion": 85,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                },
+                {
+                "posicion": 85,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                },
+                {
+                "posicion": 85,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                }
+            ],
+            "retirado": false,
+            "finalizado": false,
+            "salida": 85
+            }
+        ],
+        "finalizado": false,
+        "inicio": 1604283752.3218622,
+        "turno": {
+            "color": "Naranja",
+            "dado1": null,
+            "dado2": null,
+            "pares": null,
+            "lanzado": false,
+            "acciones": null,
+            "intentos": 3
+        },
+        "ultimo_turno": 1604285299.0205038
+    }
+
+### /juegos/{id_juego}/lanzar_dado
+
+Lanza el dado si es el turno del jugador y es momento de lanzar. Para saber de quien es el turno se debe revisar el valor `color` en el campo `turno` en el objeto del juego. Es momento de lanzar los dados cuando el campo `lanzado` es `false`
+
+#### Parámetros
+
+* *id_juego*: (argumento en la URL) String correspondiente al identificador único del juego
+
+* *player_key*: (obligatorio) llave que se entregó al jugador al momento del registro
+
+#### Ejemplo de petición
+
+    curl -X GET "https://parques-api.herokuapp.com/juegos/-ML5kq0kGcV7rtLUZZdE/lanzar_dado?player_key=e58b050d-2c40-40b6-b491-eccecada7df3" -H  "accept: application/json"
+
+#### Respuesta
+
+La petición responde con el objeto que describe el estado del juego (vease objeto estado)
+
+#### Ejemplo de respuesta
+
+    {
+        "id": "-ML5kq0kGcV7rtLUZZdE",
+        "tablero": {
+            "colores": [
+            false,
+            "Naranja",
+            false,
+            false,
+            false,
+            "Azul oscuro"
+            ]
+        },
+        "jugadores": [
+            {
+            "nickname": "Matías",
+            "color": "Naranja",
+            "fichas": [
+                {
+                "posicion": 17,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                },
+                {
+                "posicion": 17,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                },
+                {
+                "posicion": 17,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                },
+                {
+                "posicion": 17,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                }
+            ],
+            "retirado": false,
+            "finalizado": false,
+            "salida": 17
+            },
+            {
+            "nickname": "Alejo",
+            "color": "Azul oscuro",
+            "fichas": [
+                {
+                "posicion": 85,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                },
+                {
+                "posicion": 85,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                },
+                {
+                "posicion": 85,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                },
+                {
+                "posicion": 85,
+                "encarcelada": true,
+                "coronada": false,
+                "recta_final": false
+                }
+            ],
+            "retirado": false,
+            "finalizado": false,
+            "salida": 85
+            }
+        ],
+        "finalizado": false,
+        "inicio": 1604283752.3218622,
+        "turno": {
+            "color": "Naranja",
+            "dado1": 5,
+            "dado2": 5,
+            "pares": 2,
+            "lanzado": true,
+            "acciones": {
+            "dado1": 5,
+            "dado2": 5,
+            "posiciones": [
+                17,
+                17,
+                17,
+                17
+            ]
+            },
+            "intentos": 2
+        },
+        "ultimo_turno": 1604285546.1196947
+    }
+
+### /juegos/{id_juego}/mover_ficha
+
+Mueve la una ficha una cantidad determinada de casillas siempre y cuando el movimiento sea legal
+
+#### Parámetros
+
+* *id_juego*: (argumento en la URL) String correspondiente al identificador único del juego
+
+* *player_key*: (obligatorio) llave que se entregó al jugador al momento del registro
+
+* _ficha_: valor entre 0 y 3 que representa la ficha que se va a mover
+
+* _casillas_: cantidad de casillas que va a mover la ficha, puede ser el valor de uno de los dados o la suma de los dos
+
+#### Ejemplo de petición
+
+    curl -X GET "https://parques-api.herokuapp.com/juegos/-ML5kq0kGcV7rtLUZZdE/mover_ficha?player_key=e58b050d-2c40-40b6-b491-eccecada7df3&ficha=0&casillas=6" -H  "accept: application/json"
+
+#### Respuesta
+
+La petición responde con el objeto que describe el estado del juego (vease objeto estado)
+
+### /juegos/{id_juego}/sacar_de_la_carcel
+
+to do
+
+### /juegos/{id_juego}/soplar
+
+to do
+
+## Objeto estado del juego
+
+to do
+
 ## Acerca de este proyecto
 
 El stack de este proyecto es el siguiente:

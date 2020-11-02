@@ -7,10 +7,10 @@ from juego import Game
 app = FastAPI(
     title="Parqués a la colombiana",
     description="API para un juego de parqués, <a href='https://github.com/alejomongua/parquesBackend'>más información</a>",
-    version="0.0.2"
+    version="0.0.3"
 )
 
-@app.get("/")
+@app.get("/juegos")
 def listar_juegos_publicos():
     """Lista las partidas públicas a las que se puede unir"""
     return my_firebase.list_public()
