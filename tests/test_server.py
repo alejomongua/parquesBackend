@@ -1,4 +1,6 @@
 import unittest
+import json
+import copy
 from unittest.mock import Mock
 from fastapi.testclient import TestClient
 
@@ -126,13 +128,14 @@ my_firebase.register_game = Mock(side_effect=side_effect)
 my_firebase.public_registry_delete = Mock()
 my_firebase.public_registry_update = Mock()
 my_firebase.list_public = Mock(return_value=PUBLIC_GAMES_LIST_SAMPLE)
-my_firebase.get_game = Mock(return_value=SAMPLE_GAME)
 
 class ServerTest(unittest.TestCase):
     def test_lista_de_juegos_publicos(self):
         response = client.get('/juegos')
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
+        self.assertLess(response.status_code, 300)
+        self.assertGreaterEqual(response.status_code, 200)
         with self.assertRaises(KeyError):
             respuesta['error']
         primera_llave = list(respuesta.keys())[0]
@@ -145,6 +148,8 @@ class ServerTest(unittest.TestCase):
         response = client.get('/juegos/crear_partida')
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
+        self.assertLess(response.status_code, 300)
+        self.assertGreaterEqual(response.status_code, 200)
         with self.assertRaises(KeyError):
             respuesta['error']
         self.assertEqual(respuesta['tablero']['colores'], [False, False, False, False])
@@ -152,105 +157,183 @@ class ServerTest(unittest.TestCase):
         self.assertIsInstance(respuesta['id'], str)
 
     def test_estado_del_juego(self):
+        my_firebase.get_game = Mock(return_value=SAMPLE_GAME)
         response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6')
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
+        self.assertLess(response.status_code, 300)
+        self.assertGreaterEqual(response.status_code, 200)
         with self.assertRaises(KeyError):
             respuesta['error']
         self.assertEqual(respuesta['id'], SAMPLE_GAME['id'])
 
     def test_unirse(self):
+        my_firebase.get_game = Mock(return_value=SAMPLE_GAME)
         response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/unirse', params={ 'color': 'Azul', 'nickname': 'Alejandro' })
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
+        self.assertLess(response.status_code, 300)
+        self.assertGreaterEqual(response.status_code, 200)
         with self.assertRaises(KeyError):
             respuesta['error']
         self.assertEqual(respuesta['success'], True)
         self.assertIsInstance(respuesta['key'], str)
 
     def test_iniciar(self):
-        mocked_response = SAMPLE_GAME.copy()
+        mocked_response = copy.deepcopy(SAMPLE_GAME)
         mocked_response['jugadores'] = DEFAULT_PLAYERS
         mocked_response['tablero'] = DEFAULT_TABLERO
         my_firebase.get_game = Mock(return_value=mocked_response)
         response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/iniciar')
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
+        self.assertLess(response.status_code, 300)
+        self.assertGreaterEqual(response.status_code, 200)
         with self.assertRaises(KeyError):
             respuesta['error']
         self.assertEqual(respuesta['id'], SAMPLE_GAME['id'])
 
     def test_lanzar_dado(self):
-        mocked_response = SAMPLE_GAME.copy()
-        mocked_response['jugadores'] = DEFAULT_PLAYERS
+        mocked_response = copy.deepcopy(SAMPLE_GAME)
+        jugador = copy.deepcopy(DEFAULT_PLAYERS[0])
+        # Saque una ficha de la carcel para que no lance tres veces
+        jugador['fichas'][0]['encarcelada'] = False
+        mocked_response['jugadores'] = [jugador, DEFAULT_PLAYERS[1]]
         mocked_response['tablero'] = DEFAULT_TABLERO
         mocked_response['iniciado'] = True
         mocked_response['turno'] = {
             "acciones" : None,
-            "color" : "Naranja",
+            "color" : jugador['color'],
             "color_soplable" : False,
             "dado1" : None,
             "dado2" : None,
-            "intentos" : 3,
+            "intentos" : 1,
             "lanzado" : False,
             "locked" : [ False, False, False, False ],
             "pares" : None
         }
         my_firebase.get_game = Mock(return_value=mocked_response)
-        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/lanzar_dado', params={})
+        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/lanzar_dado', params={ 'player_key': jugador['key'] })
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
+        self.assertLess(response.status_code, 300)
+        self.assertGreaterEqual(response.status_code, 200)
         with self.assertRaises(KeyError):
             respuesta['error']
-        # to do
+        self.assertTrue(respuesta['turno']['lanzado'])
+        self.assertTrue(respuesta['turno']['dado1'] is not None)
+        self.assertTrue(respuesta['turno']['dado2'] is not None)
 
     def test_mover_ficha(self):
-        mocked_response = SAMPLE_GAME.copy()
-        mocked_response['jugadores'] = DEFAULT_PLAYERS
+        mocked_response = copy.deepcopy(SAMPLE_GAME)
+        jugador = copy.deepcopy(DEFAULT_PLAYERS[0])
+        # Saque una ficha de la carcel
+        jugador['fichas'][0]['encarcelada'] = False
+        mocked_response['jugadores'] = [jugador, DEFAULT_PLAYERS[1]]
         mocked_response['tablero'] = DEFAULT_TABLERO
         mocked_response['iniciado'] = True
         mocked_response['turno'] = {
-            # to do
+            "acciones" : {
+                "dado1": 4,
+                "dado2": 5
+            },
+            "color" : jugador['color'],
+            "color_soplable" : False,
+            "dado1" : 4,
+            "dado2" : 5,
+            "intentos" : 1,
+            "lanzado" : True,
+            "locked" : [ False, False, False, False ],
+            "pares" : None
         }
         my_firebase.get_game = Mock(return_value=mocked_response)
-        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/mover_ficha')
+        params = {
+            'player_key': jugador['key'],
+            'ficha': 0,
+            'casillas': 9
+        }
+        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/mover_ficha', params=params)
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
+        self.assertLess(response.status_code, 300)
+        self.assertGreaterEqual(response.status_code, 200)
         with self.assertRaises(KeyError):
             respuesta['error']
-        # to do
+        self.assertEqual(respuesta['jugadores'][0]['fichas'][0]['posicion'], jugador['salida'] + 9)
 
     def test_sacar_de_la_carcel(self):
-        mocked_response = SAMPLE_GAME.copy()
+        mocked_response = copy.deepcopy(SAMPLE_GAME)
         mocked_response['jugadores'] = DEFAULT_PLAYERS
         mocked_response['tablero'] = DEFAULT_TABLERO
         mocked_response['iniciado'] = True
         mocked_response['turno'] = {
-            # to do
+            "acciones" : {
+                "dado1": 5,
+                "dado2": 5
+            },
+            "color" : DEFAULT_PLAYERS[0]['color'],
+            "color_soplable" : False,
+            "dado1" : 5,
+            "dado2" : 5,
+            "intentos" : 1,
+            "lanzado" : True,
+            "locked" : [ False, False, False, False ],
+            "pares" : 1
         }
         my_firebase.get_game = Mock(return_value=mocked_response)
-        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/sacar_de_la_carcel')
+        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/sacar_de_la_carcel', params={ 'player_key': DEFAULT_PLAYERS[0]['key'] })
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
+        self.assertLess(response.status_code, 300)
+        self.assertGreaterEqual(response.status_code, 200)
         with self.assertRaises(KeyError):
             respuesta['error']
-        # to do
+        # Debería sacar dos fichas de la carcel
+        self.assertFalse(respuesta['jugadores'][0]['fichas'][0]['encarcelada'])
+        self.assertFalse(respuesta['jugadores'][0]['fichas'][1]['encarcelada'])
+        self.assertTrue(respuesta['jugadores'][0]['fichas'][2]['encarcelada'])
+        self.assertTrue(respuesta['jugadores'][0]['fichas'][3]['encarcelada'])
 
     def test_soplar(self):
-        mocked_response = SAMPLE_GAME.copy()
-        mocked_response['jugadores'] = DEFAULT_PLAYERS
+        mocked_response = copy.deepcopy(SAMPLE_GAME)
+        jugador = copy.deepcopy(DEFAULT_PLAYERS[0])
+        # Saque una ficha de la carcel
+        jugador['fichas'][0]['encarcelada'] = False
+        jugador['fichas'][1]['encarcelada'] = False
+        mocked_response['jugadores'] = [jugador, DEFAULT_PLAYERS[1]]
         mocked_response['tablero'] = DEFAULT_TABLERO
         mocked_response['iniciado'] = True
         mocked_response['turno'] = {
-            # to do
+            "acciones" : {
+                "dado1": 5,
+                "dado2": 5,
+                "movio_dado_1": 0,
+                "comio_dado_1": False,
+                "posiciones": [27, 17, 17, 17]
+            },
+            "color" : DEFAULT_PLAYERS[1]['color'],
+            "color_soplable" : DEFAULT_PLAYERS[0]['color'],
+            "dado1" : None,
+            "dado2" : None,
+            "intentos" : 3,
+            "lanzado" : False,
+            "locked" : [ False, False, False, False ],
+            "pares" : 1
         }
         my_firebase.get_game = Mock(return_value=mocked_response)
-        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/soplar')
+        params = {
+            'player_key': jugador['key'],
+            'ficha': 0
+        }
+        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/soplar', params=params)
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
+        self.assertLess(response.status_code, 300)
+        self.assertGreaterEqual(response.status_code, 200)
         with self.assertRaises(KeyError):
             respuesta['error']
-        # to do
+        self.assertTrue(respuesta['jugadores'][0]['fichas'][0]['encarcelada'])
+        self.assertFalse(respuesta['jugadores'][0]['fichas'][1]['encarcelada'])
 
 if __name__ == '__main__':
     unittest.main()

@@ -821,10 +821,9 @@ El stack de este proyecto es el siguiente:
 
 Para instalar este proyecto se recomienda usar un virtual environment, se necesita python3.6 o superior
 
-    # Instalar los requerimientos
-    pip install < requirements.txt
+    pip install -r requirements.txt
 
-[Se necesita ubicar el archivo secretKey.json en la raiz del proyecto para poder conectarse con Firebase] (https://www.appypie.com/faqs/how-to-obtain-your-firebase-data-url-and-secret-key)
+Se necesita ubicar el archivo secretKey.json en la raiz del proyecto para poder conectarse con Firebase https://www.appypie.com/faqs/how-to-obtain-your-firebase-data-url-and-secret-key
 
 ## Testing
 
@@ -836,7 +835,7 @@ Para ejecutar los tests, ejecute el siguiente comando en la raiz del proyecto
 
 El servidor se ejecuta con uvicorn:
 
-    uvicorn server.main:app --reload
+    uvicorn server.main:app --host=0.0.0.0 --port=${PORT:-5000}
 
 ## Demo
 
