@@ -1,13 +1,15 @@
 """Código del servidor web"""
 
-from fastapi import FastAPI, Response
+from typing import Optional
+
+from fastapi import FastAPI, Response, Header
 from juego import my_firebase
 from juego import Game
 
 app = FastAPI(
     title="Parqués a la colombiana",
     description="API para un juego de parqués, <a href='https://github.com/alejomongua/parquesBackend'>más información</a>",
-    version="0.0.4"
+    version="0.0.5"
 )
 
 @app.get("/juegos")
@@ -74,7 +76,7 @@ def iniciar(response: Response, id_juego: str):
     return estado
 
 @app.get("/juegos/{id_juego}/lanzar_dado")
-def lanzar(response: Response, id_juego: str, player_key: str):
+def lanzar(response: Response, id_juego: str, player_key: Optional[str] = Header(None)):
     game = Game.retrieve_from_database(id_juego)
     if game is None:
         response.status_code = 400
@@ -91,7 +93,7 @@ def lanzar(response: Response, id_juego: str, player_key: str):
     return estado
 
 @app.get("/juegos/{id_juego}/mover_ficha")
-def mover(response: Response, id_juego: str, player_key: str, ficha: int, casillas: int):
+def mover(response: Response, id_juego: str, ficha: int, casillas: int, player_key: Optional[str] = Header(None)):
     game = Game.retrieve_from_database(id_juego)
     if game is None:
         response.status_code = 400
@@ -108,7 +110,7 @@ def mover(response: Response, id_juego: str, player_key: str, ficha: int, casill
     return estado
 
 @app.get("/juegos/{id_juego}/sacar_de_la_carcel")
-def sacar_de_la_carcel(response: Response, id_juego: str, player_key: str):
+def sacar_de_la_carcel(response: Response, id_juego: str, player_key: Optional[str] = Header(None)):
     game = Game.retrieve_from_database(id_juego)
     if game is None:
         response.status_code = 400
@@ -125,7 +127,7 @@ def sacar_de_la_carcel(response: Response, id_juego: str, player_key: str):
     return estado
 
 @app.get("/juegos/{id_juego}/soplar")
-def soplar(response: Response, id_juego: str, player_key: str, ficha: int):
+def soplar(response: Response, id_juego: str, ficha: int, player_key: Optional[str] = Header(None)):
     game = Game.retrieve_from_database(id_juego)
     if game is None:
         response.status_code = 400

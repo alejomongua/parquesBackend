@@ -462,11 +462,11 @@ Lanza el dado si es el turno del jugador y es momento de lanzar. Para saber de q
 
 * *id_juego*: (argumento en la URL) String correspondiente al identificador único del juego
 
-* *player_key*: (obligatorio) llave que se entregó al jugador al momento del registro
+* *player_key*: (argumento en el HEADER) llave que se entregó al jugador al momento del registro. ESTE PARÁMETRO DEBE IR EN LA CABECERA COMO _player-key_
 
 #### Ejemplo de petición
 
-    curl -X GET "https://parques-api.herokuapp.com/juegos/-ML5kq0kGcV7rtLUZZdE/lanzar_dado?player_key=e58b050d-2c40-40b6-b491-eccecada7df3" -H  "accept: application/json"
+    curl -X GET "http://localhost:8000/juegos/-ML5kq0kGcV7rtLUZZdE/lanzar_dado" -H  "accept: application/json" -H  "player-key: e58b050d-2c40-40b6-b491-eccecada7df3"
 
 #### Respuesta
 
@@ -577,7 +577,7 @@ Mueve la una ficha una cantidad determinada de casillas siempre y cuando el movi
 
 * *id_juego*: (argumento en la URL) String correspondiente al identificador único del juego
 
-* *player_key*: (obligatorio) llave que se entregó al jugador al momento del registro
+* *player_key*: (argumento en el HEADER) llave que se entregó al jugador al momento del registro. ESTE PARÁMETRO DEBE IR EN LA CABECERA COMO _player-key_
 
 * _ficha_: valor entre 0 y 3 que representa la ficha que se va a mover
 
@@ -585,7 +585,7 @@ Mueve la una ficha una cantidad determinada de casillas siempre y cuando el movi
 
 #### Ejemplo de petición
 
-    curl -X GET "https://parques-api.herokuapp.com/juegos/-ML5kq0kGcV7rtLUZZdE/mover_ficha?player_key=e58b050d-2c40-40b6-b491-eccecada7df3&ficha=0&casillas=6" -H  "accept: application/json"
+    curl -X GET "http://localhost:8000/juegos/-ML5kq0kGcV7rtLUZZdE/mover_ficha?ficha=0&casillas=6" -H  "accept: application/json" -H  "player-key: e58b050d-2c40-40b6-b491-eccecada7df3"
 
 #### Respuesta
 
@@ -599,11 +599,11 @@ Si sacó pares y tiene fichas en la carcel, con esta petición saca de la carcel
 
 * *id_juego*: (argumento en la URL) String correspondiente al identificador único del juego
 
-* *player_key*: (obligatorio) llave que se entregó al jugador al momento del registro
+* *player_key*: (argumento en el HEADER) llave que se entregó al jugador al momento del registro. ESTE PARÁMETRO DEBE IR EN LA CABECERA COMO _player-key_
 
 #### Ejemplo de petición
 
-    curl -X GET "https://parques-api.herokuapp.com/juegos/-ML5kq0kGcV7rtLUZZdE/sacar_de_la_carcel?player_key=b696ca1e-d369-4483-a81c-78472f1eafa0" -H  "accept: application/json"
+    curl -X GET "http://localhost:8000/juegos/-ML5kq0kGcV7rtLUZZdE/sacar_de_la_carcel" -H  "accept: application/json" -H  "player-key: b696ca1e-d369-4483-a81c-78472f1eafa0"
 
 #### Respuesta
 
@@ -617,13 +617,13 @@ Declara que un movimiento del jugador interior es ilegal y debe enviarse una fic
 
 * *id_juego*: (argumento en la URL) String correspondiente al identificador único del juego
 
-* *player_key*: (obligatorio) llave que se entregó al jugador al momento del registro
+* *player_key*: (argumento en el HEADER) llave que se entregó al jugador al momento del registro. ESTE PARÁMETRO DEBE IR EN LA CABECERA COMO _player-key_
 
 * _ficha_: valor entre 0 y 3 que representa la ficha que se va a mover
 
 #### Ejemplo de petición
 
-    curl -X GET "https://parques-api.herokuapp.com/juegos/-ML5kq0kGcV7rtLUZZdE/soplar?player_key=b696ca1e-d369-4483-a81c-78472f1eafa0&ficha=2" -H  "accept: application/json"
+    curl -X GET "http://localhost:8000/juegos/-ML5kq0kGcV7rtLUZZdE/soplar?ficha=2" -H  "accept: application/json" -H  "player-key: b696ca1e-d369-4483-a81c-78472f1eafa0"
 
 #### Respuesta
 

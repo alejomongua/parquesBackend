@@ -213,7 +213,7 @@ class ServerTest(unittest.TestCase):
             "pares" : None
         }
         my_firebase.get_game = Mock(return_value=mocked_response)
-        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/lanzar_dado', params={ 'player_key': jugador['key'] })
+        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/lanzar_dado', headers={ 'player-key': jugador['key'] })
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
         self.assertLess(response.status_code, 300)
@@ -248,11 +248,13 @@ class ServerTest(unittest.TestCase):
         }
         my_firebase.get_game = Mock(return_value=mocked_response)
         params = {
-            'player_key': jugador['key'],
             'ficha': 0,
             'casillas': 9
         }
-        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/mover_ficha', params=params)
+        headers = {
+            'player-key': jugador['key']
+        }
+        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/mover_ficha', params=params, headers=headers)
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
         self.assertLess(response.status_code, 300)
@@ -281,7 +283,7 @@ class ServerTest(unittest.TestCase):
             "pares" : 1
         }
         my_firebase.get_game = Mock(return_value=mocked_response)
-        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/sacar_de_la_carcel', params={ 'player_key': DEFAULT_PLAYERS[0]['key'] })
+        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/sacar_de_la_carcel', headers={ 'player-key': DEFAULT_PLAYERS[0]['key'] })
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
         self.assertLess(response.status_code, 300)
@@ -322,10 +324,12 @@ class ServerTest(unittest.TestCase):
         }
         my_firebase.get_game = Mock(return_value=mocked_response)
         params = {
-            'player_key': jugador['key'],
             'ficha': 0
         }
-        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/soplar', params=params)
+        headers = {
+            'player-key': jugador['key'],
+        }
+        response = client.get('/juegos/-ML3-HtshKPcKrME5Jk6/soplar', params=params, headers=headers)
         respuesta = response.json()
         self.assertIsInstance(respuesta, dict)
         self.assertLess(response.status_code, 300)
