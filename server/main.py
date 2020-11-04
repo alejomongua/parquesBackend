@@ -1,8 +1,10 @@
 """Código del servidor web"""
 
+import asyncio
+
 from typing import Optional
 
-from fastapi import FastAPI, Response, Header
+from fastapi import FastAPI, Response, Header, WebSocket
 from juego import my_firebase
 from juego import Game
 
@@ -142,3 +144,20 @@ def soplar(response: Response, id_juego: str, ficha: int, player_key: Optional[s
         response.status_code = 400
 
     return estado
+
+@app.websocket('/juegos/{id_juego}/suscribirse')
+async def websocket_endpoint(websocket: WebSocket, id_juego: str, player_key: Optional[str] = Header(None)):
+    game = Game.retrieve_from_database(id_juego)
+    if game is None:
+        return {
+            'error': True,
+            'mensaje': 'El juego no existe, verifique el ID'
+        }
+
+    await websocket.accept()
+
+    while True:
+        await asyncio.sleep(1)
+        game = Game.retrieve_from_database(id_juego)
+        mensaje = game.public_state()
+        await websocket.send_json(mensaje)
