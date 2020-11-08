@@ -26,7 +26,7 @@ def iniciar_juego(jugadores: int):
 
     # Agregue los jugadores
     for counter in range(4):
-        game.join(list(constants.COLORES.keys())[counter], f'jugador{counter}')
+        game.join(constants.COLORES[counter], f'jugador{counter}')
 
     # Inicie el juego
     game.start()
@@ -113,7 +113,7 @@ class GameTest(unittest.TestCase):
         game = Game.create(4, False)
 
         # Instancie un color
-        color = list(constants.COLORES.keys())[0]
+        color = constants.COLORES[0]
 
         # Agrega un jugador
         resultado = game.join(color, 'pepitoperez')
@@ -140,10 +140,10 @@ class GameTest(unittest.TestCase):
 
         # Agregue 4 jugadores
         for counter in range(4):
-            game.join(list(constants.COLORES.keys())[counter], f'jugador{counter}')
+            game.join(constants.COLORES[counter], f'jugador{counter}')
 
         # No deja agregar mas del numero de posiciones
-        resultado = game.join(list(constants.COLORES.keys())[-1], list(constants.COLORES.keys())[-1])
+        resultado = game.join(constants.COLORES[-1], constants.COLORES[-1])
 
         self.assertEqual(resultado['error'], True)
         self.assertEqual(len(game.jugadores), 4)
@@ -158,7 +158,7 @@ class GameTest(unittest.TestCase):
         self.assertFalse(game.iniciado)
 
         # Agregue un jugador
-        color = list(constants.COLORES.keys())[0]
+        color = constants.COLORES[0]
         game.join(color, color)
 
         # No debe dejar iniciar con un solo jugador
@@ -168,7 +168,7 @@ class GameTest(unittest.TestCase):
         self.assertFalse(game.iniciado)
 
         # Agregue otro jugador
-        color = list(constants.COLORES.keys())[1]
+        color = constants.COLORES[1]
         game.join(color, color)
 
         # Inicie el juego
@@ -181,7 +181,7 @@ class GameTest(unittest.TestCase):
         self.assertFalse(game.turno.lanzado)
 
         # No deja unirse a un juego iniciado
-        color = list(constants.COLORES.keys())[2]
+        color = constants.COLORES[2]
         resultado = game.join(color, color)
 
         self.assertEqual(resultado['error'], True)

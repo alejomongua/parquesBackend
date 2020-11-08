@@ -49,7 +49,7 @@ class Game():
         """Se agrega un jugador a la partida"""
         if not color in constants.COLORES:
             mensaje = 'El color no es válido, debe ser una de estas opciones: ' \
-                      f'{list(constants.COLORES.keys())}'
+                      f'{constants.COLORES}'
             return {
                 'error': True,
                 'mensaje': mensaje
