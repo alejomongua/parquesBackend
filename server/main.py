@@ -5,13 +5,22 @@ import asyncio
 from typing import Optional
 
 from fastapi import FastAPI, Response, Header, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
 from juego import my_firebase
 from juego import Game
 
 app = FastAPI(
-    title="Parqués a la colombiana",
+    title='Parqués a la colombiana',
     description="API para un juego de parqués, <a href='https://github.com/alejomongua/parquesBackend'>más información</a>",
-    version="0.0.5"
+    version='0.0.6'
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
 )
 
 @app.get("/juegos")
