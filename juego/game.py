@@ -10,6 +10,7 @@ from juego.jugador import Jugador
 from juego.turno import Turno
 from juego import constants
 
+
 class Game():
     """Clase principal del juego"""
 
@@ -172,13 +173,16 @@ class Game():
 
                 # Crea una lista de listas por cada casilla ocupada
                 if not ficha1.posicion in self.fichas_en_casillas:
-                    self.fichas_en_casillas[ficha1.posicion] = [[jugador1.color, ficha]]
+                    self.fichas_en_casillas[ficha1.posicion] = [
+                        [jugador1.color, ficha]]
                 else:
-                    self.fichas_en_casillas[ficha1.posicion].append([jugador1.color, ficha])
+                    self.fichas_en_casillas[ficha1.posicion].append(
+                        [jugador1.color, ficha])
 
         # Almacene la posición actual de las fichas del jugador actual, esto
         # con el fin de saber si cuando se sople es o no procedente
-        self.turno.acciones['posiciones'] = [ficha.posicion for ficha in jugador.fichas]
+        self.turno.acciones['posiciones'] = [
+            ficha.posicion for ficha in jugador.fichas]
 
         # Verifique cuales fichas no se pueden mover
         self.turno.locked = []
@@ -230,7 +234,6 @@ class Game():
                 'mensaje': 'Ficha erronea'
             }
 
-
         if not self.turno.lanzado:
             return {
                 'error': True,
@@ -239,7 +242,8 @@ class Game():
 
         esta_ficha = jugador.fichas[ficha]
         cantidad_legal = cantidad in \
-                         (self.turno.dado1, self.turno.dado2, self.turno.dado1 + self.turno.dado2)
+            (self.turno.dado1, self.turno.dado2,
+             self.turno.dado1 + self.turno.dado2)
         if esta_ficha.encarcelada or esta_ficha.coronada or \
            not cantidad_legal or cantidad == 0 or self.turno.locked[ficha]:
             return {
@@ -261,8 +265,8 @@ class Game():
 
             if esta_ficha.posicion == 8:
                 esta_ficha.coronada = True
-                jugador.finalizado = all([ficha.coronada for ficha in jugador.fichas])
-
+                jugador.finalizado = all(
+                    [ficha.coronada for ficha in jugador.fichas])
 
         else:
             # Si no esta en la recta final
@@ -286,7 +290,8 @@ class Game():
 
                     if esta_ficha.posicion == 8:
                         esta_ficha.coronada = True
-                        jugador.finalizado = all([ficha.coronada for ficha in jugador.fichas])
+                        jugador.finalizado = all(
+                            [ficha.coronada for ficha in jugador.fichas])
 
                 else:
                     esta_ficha.posicion = (posicion_actual + movimiento + 1) % \
@@ -294,9 +299,9 @@ class Game():
 
         # Revise si metió alguna ficha a la carcel
         comio = not Tablero.seguro(esta_ficha.posicion) and \
-                not esta_ficha.recta_final and \
-                not Tablero.salida(esta_ficha.posicion) and \
-                esta_ficha.posicion in self.fichas_en_casillas
+            not esta_ficha.recta_final and \
+            not Tablero.salida(esta_ficha.posicion) and \
+            esta_ficha.posicion in self.fichas_en_casillas
         ficha_que_se_comio = None
         if comio:
             # Bloquee la ficha para que no la pueda mover
@@ -312,12 +317,14 @@ class Game():
                         # Lleve la ficha a la carcel
                         otra_ficha.encarcelada = True
                         otra_ficha.posicion = otro_jugador.salida
-                        ficha_que_se_comio = [otro_jugador.color, esta_ficha.posicion]
+                        ficha_que_se_comio = [
+                            otro_jugador.color, esta_ficha.posicion]
                         break
 
             # En esta casilla solo deja este color en el mapa, para que si pone otra
             # ficha ahí mismo no cuente como si hubiera comido
-            self.fichas_en_casillas[esta_ficha.posicion] = [[jugador.color, ficha]]
+            self.fichas_en_casillas[esta_ficha.posicion] = [
+                [jugador.color, ficha]]
 
         # Determine cuantos dados usó
         if cantidad == self.turno.dado1:
@@ -403,7 +410,8 @@ class Game():
         unica_ficha = False
         if len(fichas_liberadas) == 1:
             # Si le quedan más fichas, la ficha que sacó queda bloqueada
-            cantidad_no_coronadas = len([0 for ficha in jugador.fichas if not ficha.coronada])
+            cantidad_no_coronadas = len(
+                [0 for ficha in jugador.fichas if not ficha.coronada])
             if cantidad_no_coronadas != 1:
                 self.turno.locked[fichas_liberadas[0]] = True
             else:
@@ -512,7 +520,7 @@ class Game():
                     'mensaje': 'No se puede soplar esa ficha'
                 }
 
-        else: # Si sacó pares
+        else:  # Si sacó pares
             # Si no sacó de la carcel y debía sacar de la carcel
             if not self.turno.acciones.get('sacar_de_la_carcel', False) and \
                any([ficha.encarcelada for ficha in jugador_soplable.fichas]):
@@ -522,8 +530,10 @@ class Game():
                     if comio_dado_1:
                         for jugador1 in self.jugadores:
                             if jugador1.color == comio_dado_1[0]:
-                                jugador1.fichas[comio_dado_1[1]].encarcelada = False
-                                jugador1.fichas[comio_dado_1[1]].posicion = esta_ficha.posicion
+                                jugador1.fichas[comio_dado_1[1]
+                                                ].encarcelada = False
+                                jugador1.fichas[comio_dado_1[1]
+                                                ].posicion = esta_ficha.posicion
                                 break
 
                 if movio_dado_2 == ficha:
@@ -532,15 +542,17 @@ class Game():
                     if comio_dado_2:
                         for jugador1 in self.jugadores:
                             if jugador1.color == comio_dado_2[0]:
-                                jugador1.fichas[comio_dado_2[1]].encarcelada = False
-                                jugador1.fichas[comio_dado_2[1]].posicion = esta_ficha.posicion
+                                jugador1.fichas[comio_dado_2[1]
+                                                ].encarcelada = False
+                                jugador1.fichas[comio_dado_2[1]
+                                                ].posicion = esta_ficha.posicion
                                 break
 
         # Si la ficha que están acusando podía comer
         posicion = self.turno.acciones['posiciones'][ficha]
-        if (posicion + dado1) in self.fichas_en_casillas or \
-           (posicion + dado2) in self.fichas_en_casillas or \
-           (posicion + dado1 + dado2) in self.fichas_en_casillas:
+        if posicion + dado1 in self.fichas_en_casillas or \
+           posicion + dado2 in self.fichas_en_casillas or \
+           posicion + dado1 + dado2 in self.fichas_en_casillas:
             ficha_soplable = True
 
         if not ficha_soplable:
@@ -574,11 +586,21 @@ class Game():
         # Si no encuentra ninguno retorna None
         return None
 
+    def mi_color(self, key: str):
+        for jugador in self.jugadores:
+            if jugador.key == key:
+                return {'color': jugador.color}
+
+        # Si no encuentra ninguno retorna None
+        return {'error': True, 'mensaje': 'No existe el jugador'}
+
     def siguiente_turno(self):
         """Hace el setup para el siguiente turno"""
         if self.turno.pares is None and self.turno.intentos <= 0:
-            indice_actual = [jugador.color for jugador in self.jugadores].index(self.turno.color)
-            siguiente_jugador = self.jugadores[(indice_actual + 1) % len(self.jugadores)]
+            indice_actual = [jugador.color for jugador in self.jugadores].index(
+                self.turno.color)
+            siguiente_jugador = self.jugadores[(
+                indice_actual + 1) % len(self.jugadores)]
             self.turno.siguiente_turno(siguiente_jugador.color)
             self.turno.pares = None
             self.turno.intentos = siguiente_jugador.cantidad_lanzamientos()
@@ -617,7 +639,8 @@ class Game():
         game.id = estado.get('id')
         game.turno = Turno.deserializar(estado.get('turno'))
         game.tablero = Tablero.deserializar(estado.get('tablero'))
-        game.jugadores = [Jugador.deserializar(jugador) for jugador in estado.get('jugadores', [])]
+        game.jugadores = [Jugador.deserializar(
+            jugador) for jugador in estado.get('jugadores', [])]
         return game
 
     @classmethod

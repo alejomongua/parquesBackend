@@ -11,7 +11,8 @@ from juego import Game
 
 app = FastAPI(
     title='Parqués a la colombiana',
-    description="API para un juego de parqués, <a href='https://github.com/alejomongua/parquesBackend'>más información</a>",
+    description="API para un juego de parqués, "
+    "<a href='https://github.com/alejomongua/parquesBackend'>más información</a>",
     version='0.0.6'
 )
 
@@ -23,13 +24,16 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
+
 @app.get("/juegos")
 def listar_juegos_publicos():
     """Lista las partidas públicas a las que se puede unir"""
     return my_firebase.list_public()
 
+
 @app.get("/juegos/crear_partida", status_code=201)
 def nueva_partida(response: Response, posiciones: int = 4, publico: bool = True):
+    """Se genera una nueva partida a través del API"""
     game = Game.create(posiciones, publico)
 
     # Si es un diccionario es porque hubo un error
@@ -38,6 +42,7 @@ def nueva_partida(response: Response, posiciones: int = 4, publico: bool = True)
         return game
 
     return game.public_state()
+
 
 @app.get("/juegos/{id_juego}")
 def informacion_del_juego(response: Response, id_juego: str):
@@ -51,6 +56,7 @@ def informacion_del_juego(response: Response, id_juego: str):
         }
 
     return game.public_state()
+
 
 @app.get("/juegos/{id_juego}/unirse")
 def unirse(response: Response, id_juego: str, color: str, nickname: str):
@@ -69,6 +75,7 @@ def unirse(response: Response, id_juego: str, color: str, nickname: str):
 
     return estado
 
+
 @app.get("/juegos/{id_juego}/iniciar")
 def iniciar(response: Response, id_juego: str):
     game = Game.retrieve_from_database(id_juego)
@@ -85,6 +92,7 @@ def iniciar(response: Response, id_juego: str):
         response.status_code = 400
 
     return estado
+
 
 @app.get("/juegos/{id_juego}/lanzar_dado")
 def lanzar(response: Response, id_juego: str, player_key: Optional[str] = Header(None)):
@@ -103,8 +111,13 @@ def lanzar(response: Response, id_juego: str, player_key: Optional[str] = Header
 
     return estado
 
+
 @app.get("/juegos/{id_juego}/mover_ficha")
-def mover(response: Response, id_juego: str, ficha: int, casillas: int, player_key: Optional[str] = Header(None)):
+def mover(response: Response,
+          id_juego: str,
+          ficha: int,
+          casillas: int,
+          player_key: Optional[str] = Header(None)):
     game = Game.retrieve_from_database(id_juego)
     if game is None:
         response.status_code = 400
@@ -119,6 +132,7 @@ def mover(response: Response, id_juego: str, ficha: int, casillas: int, player_k
         response.status_code = 400
 
     return estado
+
 
 @app.get("/juegos/{id_juego}/sacar_de_la_carcel")
 def sacar_de_la_carcel(response: Response, id_juego: str, player_key: Optional[str] = Header(None)):
@@ -137,6 +151,7 @@ def sacar_de_la_carcel(response: Response, id_juego: str, player_key: Optional[s
 
     return estado
 
+
 @app.get("/juegos/{id_juego}/soplar")
 def soplar(response: Response, id_juego: str, ficha: int, player_key: Optional[str] = Header(None)):
     game = Game.retrieve_from_database(id_juego)
@@ -154,8 +169,27 @@ def soplar(response: Response, id_juego: str, ficha: int, player_key: Optional[s
 
     return estado
 
+
+@app.get("/juegos/{id_juego}/mi_color")
+def mi_color(response: Response, id_juego: str, player_key: Optional[str] = Header(None)):
+    game = Game.retrieve_from_database(id_juego)
+    if game is None:
+        response.status_code = 400
+        return {
+            'error': True,
+            'mensaje': 'El juego no existe, verifique el ID'
+        }
+
+    mi_color = game.mi_color(player_key)
+
+    if mi_color.get('error', None):
+        response.status_code = 400
+
+    return mi_color
+
+
 @app.websocket('/juegos/{id_juego}/suscribirse')
-async def websocket_endpoint(websocket: WebSocket, id_juego: str, player_key: Optional[str] = Header(None)):
+async def websocket_endpoint(websocket: WebSocket, id_juego: str):
     game = Game.retrieve_from_database(id_juego)
     if game is None:
         return {
